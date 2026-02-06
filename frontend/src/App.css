@@ -1478,3 +1478,30 @@ body:not(.dark) .admin-progress-container {
 body:not(.dark) .admin-progress-bar {
   background: var(--blue-primary) !important;
 }
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo-img {
+  height: 38px;      /* Altura ideal para o header de 60px */
+  width: auto;       /* Mantém a proporção da imagem */
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px var(--blue-glow)); /* Dá um leve brilho azul na logo */
+  transition: transform var(--transition);
+}
+
+.brand-logo:hover .brand-logo-img {
+  transform: scale(1.05); /* Leve zoom ao passar o mouse */
+}
+
+/* Ajuste no brand-text para alinhar com a nova imagem */
+.brand-text {
+  border-left: 2px solid var(--blue-primary);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
