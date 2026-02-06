@@ -1,0 +1,1480 @@
+/* ================================================= */
+/* 1. VARIÁVEIS E RESET (FOCO NO DARK MODE REAL)     */
+/* ================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+:root {
+  /* Paleta Leão Tech - Premium Dark Slate & Blue */
+  --bg-deep: #0f172a;        /* Preto Azulado Profundo */
+  --card-bg: #1e293b;        /* Dark Slate Gray (Ardósia) */
+  
+  /* Escala de Azuis Refinados */
+  --blue-primary: #3b82f6;   /* Azul Royal para ações principais */
+  --blue-hover: #1d4ed8;     /* Azul Cobalto para hover */
+  --blue-light: #93c5fd;     /* Azul Claro para detalhes e leitura */
+  --blue-glow: rgba(59, 130, 246, 0.12);
+  
+  --text-main: #ffffff;      /* Branco puro para leitura máxima */
+  --text-dim: #94a3b8;       /* Cinza azulado para textos secundários */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* Cores de Estado */
+  --success: #3b82f6; 
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* Espaçamento */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Transições */
+  --transition-fast: 150ms ease-in-out;
+  --transition: 200ms ease-in-out;
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px var(--blue-glow);
+
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 500;
+  --z-modal: 1000;
+  --z-popup: 2000;
+  --z-toast: 3000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+}
+
+/* Forçar Dark Mode na classe do body */
+body.dark {
+  background-color: var(--bg-deep);
+}
+
+/* Ajuste para Modo Claro - Profissional com Azul Escuro */
+body:not(.dark) {
+  --bg-deep: #f8fafc;        /* Branco Gelo */
+  --card-bg: #ffffff;        /* Branco Puro */
+  --text-main: #0f172a;      /* Preto Azulado */
+  --text-dim: #64748b;       /* Cinza Escuro */
+  --border-subtle: #e2e8f0;  /* Cinza Claro */
+  
+  --blue-primary: #1e3a8a;   /* Azul Escuro Marinho */
+  --blue-hover: #172554;
+  --blue-glow: rgba(30, 58, 138, 0.08);
+}
+
+/* Header com efeito de vidro (Glassmorphism) */
+body:not(.dark) .glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Cards com Sombra Suave e Profundidade */
+body:not(.dark) .shadow-card,
+body:not(.dark) .stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-slow);
+}
+
+/* Efeito de elevação ao passar o mouse */
+body:not(.dark) .shadow-card:hover,
+body:not(.dark) .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: #cbd5e1;
+}
+
+/* Ajuste opcional: se você tiver inputs ou badges */
+body:not(.dark) input,
+body:not(.dark) select {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #0f172a;
+}
+
+body:not(.dark) input:focus,
+body:not(.dark) select:focus {
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+/* ================================================= */
+/* 2. TELA DE LOGIN (MAIS LARGA E ORGANIZADA)        */
+/* ================================================= */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  /* Gradiente puxando para o Dark Slate */
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08) 0%, #0f172a 100%);
+}
+
+.login-card {
+  background: var(--card-bg);
+  padding: 3rem 4rem;
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-subtle);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.login-card h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff; /* Branco Puro */
+  margin-bottom: 4px;
+  letter-spacing: -0.025em;
+}
+
+.login-card .subtitle {
+  color: var(--blue-light); /* Azul Claro para destaque sutil */
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+}
+
+/* Inputs da tela de login */
+.input-modern {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #0f172a; /* Fundo contrastando com o Slate do card */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.input-modern::placeholder {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.input-modern:focus {
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+.input-modern:hover:not(:focus):not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-ghost {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 15px;
+  cursor: pointer;
+  text-decoration: underline;
+  opacity: 0.8;
+  transition: var(--transition);
+}
+
+.btn-ghost:hover {
+  opacity: 1;
+  color: var(--blue-light);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.usability-info {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 2rem;
+  line-height: 1.6;
+}
+
+/* Estilo base dos círculos numéricos */
+.rating-group {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.rating-group .btn-rating {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.rating-group .btn-rating:hover {
+  border-color: var(--blue-light);
+  color: var(--blue-light);
+  transform: scale(1.1);
+  background: rgba(147, 197, 253, 0.05);
+}
+
+.rating-group .btn-rating:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+.rating-group .btn-rating.active {
+  background-color: var(--blue-primary);
+  border-color: var(--blue-primary);
+  color: white;
+  box-shadow: var(--shadow-glow);
+  transform: scale(1.05);
+}
+
+/* ================================================= */
+/* 3. HEADER (DISCRETO E FIXO NO TOPO)              */
+/* ================================================= */
+.glass-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(15, 23, 42, 0.9); /* Dark Deep mais transparente */
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  z-index: var(--z-sticky);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-circle {
+  color: var(--blue-light); /* Azul claro para o logo brilhar */
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: -1px;
+}
+
+.brand-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding-top: 2px;
+  align-items: center;
+  border-left: 2px solid var(--blue-primary);
+  margin-left: 10px;
+  padding-left: 10px;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  width: max-content;
+  height: auto;
+  color: #ffffff; /* Texto principal do header em branco */
+}
+
+.brand-text span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--blue-light) !important; /* Azul claro para a tag */
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* Badge de Aluno/Admin sutil */
+.user-badge {
+  background: var(--blue-glow) !important;
+  color: var(--blue-light) !important;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: 1px solid rgba(147, 197, 253, 0.2); /* Borda em azul claro sutil */
+  letter-spacing: 0.5px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.clock {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ações do Nav (Botões de Ícones) */
+.nav-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-action-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.btn-action-circle:hover {
+  background: var(--blue-hover);
+  color: white;
+  border-color: var(--blue-hover);
+  transform: translateY(-1px);
+}
+
+.btn-action-circle:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+.btn-action-circle:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--blue-light);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+/* ================================================= */
+/* 4. LAYOUT PRINCIPAL (GRID)                        */
+/* ================================================= */
+.app-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 90px 20px 40px;
+  min-height: 100vh;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+}
+
+/* Card padrão do sistema - Foco no Dark Slate */
+.shadow-card {
+  background: var(--card-bg); /* Dark Slate Gray */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-slow);
+}
+
+.shadow-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(147, 197, 253, 0.15); /* Brilho azul claro sutil */
+}
+
+@media (max-width: 850px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .glass-header {
+    padding: 0 1rem;
+  }
+}
+
+/* ================================================= */
+/* 5. CARD DE AULA E BOTÕES DE PONTO                 */
+/* ================================================= */
+.card-header-info {
+  margin-bottom: 20px;
+}
+
+.card-header-info h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff; /* Branco Puro para destaque */
+  letter-spacing: -0.02em;
+}
+
+.text-muted {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  padding: 0 4px;
+}
+
+/* Banner de informação sutil em Azul Claro */
+.info-banner {
+  background: var(--blue-glow);
+  border: 1px solid rgba(147, 197, 253, 0.15);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--blue-light); /* Azul Claro para leitura no escuro */
+  text-align: center;
+  margin: 15px 0;
+  font-weight: 600;
+}
+
+/* Botões de Ponto: Refinados com Azul Royal e Branco */
+.btn-ponto {
+  width: 100%;
+  max-width: 320px;
+  margin: 10px auto;
+  display: block;
+  padding: 14px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ponto::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.btn-ponto:hover::before {
+  left: 100%;
+}
+
+.btn-ponto.in {
+  background: linear-gradient(135deg, var(--blue-hover), var(--blue-primary));
+  color: #ffffff;
+  box-shadow: 0 4px 15px var(--blue-glow);
+}
+
+.btn-ponto.in:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+}
+
+.btn-ponto.in:active {
+  transform: translateY(0);
+}
+
+.btn-ponto.out {
+  background-color: transparent;
+  border: 2px solid #be4e4e; /* Vermelho mais visível no Slate */
+  color: #fca5a5; /* Rosa claro para não cansar a vista */
+}
+
+.btn-ponto.out:hover {
+  background-color: #991b1b;
+  color: #ffffff;
+  border-color: #991b1b;
+  transform: translateY(-2px);
+}
+
+.btn-ponto:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+.ponto-concluido {
+  text-align: center;
+  color: var(--blue-light);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--blue-glow);
+}
+
+.ponto-concluido::before {
+  content: "✓";
+  font-weight: 900;
+  color: var(--blue-primary);
+}
+
+/* ================================================= */
+/* 6. LATERAL DE ESTATÍSTICAS (SUTILEZA)            */
+/* ================================================= */
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-card {
+  background: var(--card-bg); /* Dark Slate Gray */
+  border: 1px solid var(--border-subtle);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: all var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--blue-primary); /* Brilho azul ao passar o mouse */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--blue-light); /* Azul claro para os números se destacarem */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Destaque para Faltas em vermelho sutil */
+.stat-value.faltas {
+  color: var(--danger);
+}
+
+.text-success {
+  color: var(--blue-primary);
+  font-weight: 700;
+}
+
+/* ================================================= */
+/* 7. TABELA DE HISTÓRICO                           */
+/* ================================================= */
+.historico-container {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+}
+
+.historico-container h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.historico-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historico-table th {
+  text-align: left;
+  padding: 14px 12px;
+  font-size: 0.75rem;
+  color: var(--blue-light); /* Cabeçalho da tabela em azul claro */
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border-subtle);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.historico-table td {
+  padding: 14px 12px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background var(--transition-fast);
+}
+
+.historico-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.historico-table tbody tr:hover {
+  background: rgba(147, 197, 253, 0.05); /* Efeito de hover azulado sutil */
+}
+
+.historico-table tbody tr:hover td {
+  color: #ffffff;
+}
+
+/* ================================================= */
+/* 8. MODAL DE FEEDBACK (CHECK-OUT)                 */
+/* ================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.92); /* Fundo bem escuro para o modal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: var(--card-bg); /* Dark Slate Gray */
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  max-width: 420px;
+  width: 90%;
+  border: 1px solid var(--border-subtle);
+  animation: slideUp 0.3s ease-out;
+  box-shadow: var(--shadow-xl);
+}
+
+.input-notes {
+  width: 100%;
+  height: 100px;
+  background: #0f172a; /* Fundo mais escuro que o modal */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  padding: 12px;
+  font-size: 0.85rem;
+  resize: vertical;
+  margin: 15px 0;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.input-notes:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px var(--blue-glow);
+}
+
+.input-notes::placeholder {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+/* Popups de Alerta */
+.custom-popup {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  z-index: var(--z-toast);
+  box-shadow: var(--shadow-xl);
+  animation: slideInRight 0.4s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-popup.sucesso {
+  background: var(--blue-primary); /* Azul Royal Leão Tech */
+  color: #ffffff;
+}
+
+.custom-popup.erro {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+/* ================================================= */
+/* 9. AJUSTES PARA PERFIL E ADMIN                    */
+/* ================================================= */
+
+/* Estilo para labels acima dos inputs no Perfil */
+.stat-label {
+  display: block;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue-light); /* Azul claro para melhor leitura das etiquetas */
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* Select customizado (estilo input-modern com seta em azul claro) */
+select.input-modern {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2393c5fd'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+/* Calendário de próximas aulas (Lista sutil) */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  font-size: 0.85rem;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  transition: background var(--transition-fast);
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+li:hover {
+  background: rgba(147, 197, 253, 0.05);
+  padding-left: 8px;
+  padding-right: 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-xs);
+  color: var(--blue-light);
+}
+
+/* Botão de Check-in travado (Estado desabilitado) */
+.btn-ponto:disabled {
+  background-color: #1e293b; /* Mantém o Slate mas remove o brilho */
+  color: var(--text-dim);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.5;
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-ponto:disabled::before {
+  display: none;
+}
+
+/* Badge de Turma no Login e Perfil */
+.user-name-badge {
+  display: inline-block;
+  background: var(--blue-glow) !important;
+  color: var(--blue-light) !important;
+  padding: 4px 10px;
+  margin-left: 12px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid rgba(147, 197, 253, 0.3) !important;
+  vertical-align: middle;
+}
+
+/* Alinhamento para o formulário de Perfil */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+}
+
+/* Input desabilitado (Visual sutil em Dark Slate) */
+input:disabled {
+  opacity: 0.5;
+  background: #0f172a !important;
+  color: var(--text-dim) !important;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+/* Efeito de hover nos avatares */
+.avatar-option {
+  transition: all var(--transition);
+  cursor: pointer;
+  border-radius: var(--radius-full);
+}
+
+.avatar-option:hover {
+  transform: scale(1.1);
+  background: var(--blue-glow) !important;
+  box-shadow: 0 0 10px var(--blue-glow);
+}
+
+.avatar-option:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+.theme-toggle-login {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--blue-primary);
+  border-radius: var(--radius-full);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-sticky);
+  transition: all var(--transition);
+  color: var(--blue-light);
+}
+
+.theme-toggle-login:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: var(--shadow-glow);
+  background: var(--bg-deep);
+}
+
+.theme-toggle-login:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+/* Ajuste da Badge de Turma */
+.turma-badge {
+  background: var(--blue-glow);
+  color: var(--blue-light);
+  padding: 6px 16px;
+  border-radius: var(--radius-xl);
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 5px;
+  border: 1px solid rgba(147, 197, 253, 0.2);
+}
+
+/* ================================================= */
+/* 10. EXTENSÕES DO DASHBOARD ADMINISTRATIVO         */
+/* ================================================= */
+
+/* Barra de Progresso de Adesão Live */
+.admin-progress-container {
+  margin-top: 20px;
+  background: var(--bg-deep);
+  height: 10px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.admin-progress-bar {
+  background: linear-gradient(90deg, var(--blue-hover), var(--blue-primary));
+  height: 100%;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-full);
+}
+
+/* Pop-up Moderno (Blue, Preto e Branco) */
+.custom-popup-modern {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background-color: var(--blue-primary);
+  color: #ffffff;
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xl);
+  border-left: 6px solid #000000;
+  z-index: var(--z-toast);
+  font-weight: 700;
+  font-size: 0.9rem;
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* Seções Internas do Modal de Gestão */
+.admin-modal-section {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+}
+
+.admin-modal-section h5 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--blue-light);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Estilo para inputs de data/hora no Admin */
+input[type="date"].input-modern,
+input[type="time"].input-modern {
+  color-scheme: dark;
+  color: #ffffff;
+}
+
+/* Botão de Reset de Sessão (Cuidado) */
+.btn-danger-outline {
+  background: transparent;
+  border: 2px solid var(--danger);
+  color: var(--danger);
+  padding: 10px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.5px;
+}
+
+.btn-danger-outline:hover {
+  background: var(--danger);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Grid de Inputs no Modal */
+.admin-grid-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.status-badge.alerta {
+  background: rgba(245, 158, 11, 0.1); 
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ================================================= */
+/* 11. DASHBOARD ADMINISTRATIVO REFORMULADO          */
+/* ================================================= */
+
+.admin-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  gap: 1.5rem !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* 1. SEPARAÇÃO DO CARD DE CIMA (FIXADO) */
+.admin-stats-grid > div:first-child,
+.card-destaque-hoje {
+  grid-column: 1 / -1 !important;
+  margin-bottom: 2rem !important;
+  background: linear-gradient(
+    145deg,
+    #1e293b,
+    #0f172a
+  ) !important;
+  border: 1px solid var(--blue-glow) !important;
+  padding: 3rem !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+  justify-content: center !important;
+  flex-direction: column;
+  gap: 12px !important;
+}
+
+/* 2. CARD PADRÃO (OS 3 DE BAIXO) */
+.admin-stat-card {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  transition: all var(--transition-slow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.admin-stat-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--blue-primary);
+  opacity: 0.8;
+}
+
+.admin-stat-card.warning::before { background: var(--warning) !important; }
+.admin-stat-card.success::before { background: var(--blue-light) !important; }
+.admin-stat-card.danger::before { background: var(--danger) !important; }
+
+/* 3. TEXTOS E NÚMEROS */
+.admin-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.8rem;
+}
+
+.admin-stat-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra de Adesão */
+.adesao-container {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  margin-top: 2rem;
+}
+
+/* ================================================= */
+/* 12. TABELAS E BUSCA (GESTÃO DE ALUNOS)           */
+/* ================================================= */
+
+.admin-main-section {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+}
+
+.search-bar-container {
+  background: var(--bg-deep);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Tabela Admin com Tipografia Refinada */
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px; /* Reduzi um pouco o espaçamento para ficar mais coeso */
+}
+
+.admin-table tr {
+  background: var(--card-bg);
+  transition: all var(--transition);
+}
+
+.admin-table tr:hover {
+  background: rgba(30, 41, 59, 0.9);
+  transform: scale(1.01);
+}
+
+.admin-table td {
+  padding: 20px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+
+.admin-table td:first-child {
+  border-left: 1px solid var(--border-subtle);
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--blue-light);
+}
+
+.admin-table td:last-child {
+  border-right: 1px solid var(--border-subtle);
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  text-align: right;
+}
+
+/* Estilo para a Coluna de Turma (Badge dentro da tabela) */
+.formacao-tag {
+  font-size: 0.7rem;
+  padding: 5px 10px;
+  background: rgba(147, 197, 253, 0.05);
+  border-radius: var(--radius-sm);
+  color: var(--blue-light);
+  border: 1px solid rgba(147, 197, 253, 0.15);
+  font-weight: 700;
+}
+
+/* ================================================= */
+/* 13. EXPORTAÇÃO E FILTROS                         */
+/* ================================================= */
+
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff; /* Branco puro para se destacar no Dark Mode */
+  color: #0f172a;      /* Texto no fundo do app */
+  border: none;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-export:hover {
+  background: var(--blue-light); /* Azul claro no hover */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-export:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+.filter-pill {
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: var(--card-bg); /* Dark Slate Gray */
+  color: var(--text-dim);
+  transition: all var(--transition);
+}
+
+.filter-pill:hover {
+  border-color: var(--blue-light);
+  color: var(--blue-light);
+  background: rgba(147, 197, 253, 0.05);
+}
+
+.filter-pill.active {
+  background: var(--blue-primary);
+  color: #ffffff;
+  border-color: var(--blue-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ================================================= */
+/* 14. SUPER RESPONSIVIDADE (MOBILE & TABLET)        */
+/* ================================================= */
+
+@media (max-width: 768px) {
+  .admin-table tr {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-subtle) !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  .admin-table td:first-child {
+    color: var(--blue-light) !important;
+    font-weight: 700;
+  }
+}
+
+/* ================================================= */
+/* 15. ANIMAÇÕES E KEYFRAMES                         */
+/* ================================================= */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Skeleton Loading Refinado para o Azul Leão Tech */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card-bg) 25%,
+    rgba(59, 130, 246, 0.05) 50%,
+    var(--card-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Estilo para focar na acessibilidade */
+:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--blue-primary);
+  color: #ffffff;
+}
+
+/* ================================================= */
+/* 16. UTILITÁRIOS E HELPERS                         */
+/* ================================================= */
+
+/* Focus Visible Global - Usando Azul Claro para contraste no Dark Slate */
+:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+/* Seleção de Texto */
+::selection {
+  background: var(--blue-primary);
+  color: white;
+}
+
+/* Scrollbar Customizada - Refinada para o Slate */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--card-bg); /* Dark Slate Gray */
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-dark);
+}
+
+/* Classe para esconder visualmente mas manter acessível */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Truncar texto com ellipsis */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Prevenir seleção de texto */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ================================================= */
+/* 17. AJUSTE PROFISSIONAL – MODO CLARO (LIGHT MODE) */
+/* ================================================= */
+body:not(.dark) {
+  --bg-deep: #f8fafc; 
+  --bg-elevated: #ffffff;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f1f5f9;
+
+  --text-main: #0f172a; 
+  --text-secondary: #475569;
+  --text-dim: #64748b;
+
+  --border-subtle: #e2e8f0; 
+  --border-hover: #cbd5e1;
+
+  /* Azul no modo claro: Mais denso para garantir acessibilidade */
+  --blue-primary: #1e40af; 
+  --blue-light: #3b82f6;
+  --blue-glow: rgba(30, 64, 175, 0.08);
+
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* Ajustes finos para Modo Claro */
+body:not(.dark) .glass-header {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+body:not(.dark) .stat-card,
+body:not(.dark) .admin-stat-card,
+body:not(.dark) .shadow-card,
+body:not(.dark) .ponto-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Números das estatísticas no modo claro */
+body:not(.dark) .stat-value, 
+body:not(.dark) .admin-stat-number {
+  color: var(--blue-primary) !important;
+}
+
+body:not(.dark) .time-box {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+body:not(.dark) .admin-table tr,
+body:not(.dark) .historico-table tr {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+body:not(.dark) .input-modern,
+body:not(.dark) .input-notes,
+body:not(.dark) select.input-modern {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #1e293b !important;
+}
+
+body:not(.dark) .btn-secondary {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+body:not(.dark) .btn-secondary:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: var(--blue-primary);
+}
+
+/* Barra de progresso no modo claro */
+body:not(.dark) .admin-progress-container {
+  background: #e2e8f0 !important;
+}
+
+body:not(.dark) .admin-progress-bar {
+  background: var(--blue-primary) !important;
+}
