@@ -1468,7 +1468,8 @@ body:not(.dark) .historico-table tr:hover {
 
 /* Inputs com bordas nítidas */
 body:not(.dark) .input-modern,
-body:not(.dark) .input-notes {
+body:not(.dark) .input-notes,
+body:not(.dark) select.input-modern {
   background: #ffffff !important;
   border: 2px solid #cbd5e1 !important;
   color: #0f172a !important;
@@ -1504,11 +1505,62 @@ body:not(.dark) .info-banner {
   border: 1px solid #99f6e4 !important;
 }
 
-/* Ajuste no brand-text para alinhar com a nova imagem */
+/* --- AJUSTES DE LOGO E HEADER --- */
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.brand-logo-img {
+  height: 35px !important;  /* Altura fixa para evitar estouro visual */
+  width: auto !important;
+  max-width: 150px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.brand-logo:hover .brand-logo-img {
+  transform: scale(1.05);
+}
+
 .brand-text {
   border-left: 2px solid var(--blue-primary);
   padding-left: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Ajuste específico para o modo claro não quebrar o tamanho */
+body:not(.dark) .brand-logo-img {
+  height: 35px !important;
+  filter: drop-shadow(0 0 2px rgba(0, 128, 128, 0.2));
+}
+
+/* Garante que o header segure os elementos dentro dele */
+.glass-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 60px; /* Alinhado com a altura definida no seu header original */
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.logo-circle {
+  color: var(--blue-light); /* Azul claro para o logo brilhar */
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: -1px;
 }
