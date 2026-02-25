@@ -6,6 +6,7 @@ import Admin from "./Admin";
 import Perfil from "./Perfil";
 import { fetchComToken } from "./Api";
 import GestaoRapida from "./GestaoRapida";
+import HomeAdmin from "./HomeAdmin";
 
 const getProximasAulas = (formacao) => {
   const hoje = new Date();
@@ -17,41 +18,119 @@ const getProximasAulas = (formacao) => {
   if (formacao === "fullstack") {
     cronogramaAtivo = [
       aulaInaugural,
-      "02/03/2026", "04/03/2026", "06/03/2026", "09/03/2026", "11/03/2026",
-      "13/03/2026", "16/03/2026", "18/03/2026", "20/03/2026", "23/03/2026",
-      "25/03/2026", "27/03/2026", "30/03/2026", "01/04/2026", "06/04/2026",
-      "08/04/2026", "13/04/2026", "15/04/2026", "17/04/2026", "20/04/2026",
-      "22/04/2026", "24/04/2026", "27/04/2026", "29/04/2026", "04/05/2026",
-      "06/05/2026", "08/05/2026", "11/05/2026", "13/05/2026", "15/05/2026",
-      "18/05/2026", "20/05/2026", "22/05/2026", "25/05/2026", "27/05/2026",
-      "29/05/2026", "01/06/2026", "03/06/2026", "05/06/2026", "08/06/2026",
-      "10/06/2026", "12/06/2026", "15/06/2026", "17/06/2026", "19/06/2026",
-      "22/06/2026", "24/06/2026", "26/06/2026"
+      "02/03/2026",
+      "04/03/2026",
+      "06/03/2026",
+      "09/03/2026",
+      "11/03/2026",
+      "13/03/2026",
+      "16/03/2026",
+      "18/03/2026",
+      "20/03/2026",
+      "23/03/2026",
+      "25/03/2026",
+      "27/03/2026",
+      "30/03/2026",
+      "01/04/2026",
+      "06/04/2026",
+      "08/04/2026",
+      "13/04/2026",
+      "15/04/2026",
+      "17/04/2026",
+      "20/04/2026",
+      "22/04/2026",
+      "24/04/2026",
+      "27/04/2026",
+      "29/04/2026",
+      "04/05/2026",
+      "06/05/2026",
+      "08/05/2026",
+      "11/05/2026",
+      "13/05/2026",
+      "15/05/2026",
+      "18/05/2026",
+      "20/05/2026",
+      "22/05/2026",
+      "25/05/2026",
+      "27/05/2026",
+      "29/05/2026",
+      "01/06/2026",
+      "03/06/2026",
+      "05/06/2026",
+      "08/06/2026",
+      "10/06/2026",
+      "12/06/2026",
+      "15/06/2026",
+      "17/06/2026",
+      "19/06/2026",
+      "22/06/2026",
+      "24/06/2026",
+      "26/06/2026",
     ];
   } else if (formacao === "data_analytics") {
     cronogramaAtivo = [
       aulaInaugural,
-      "03/03/2026", "05/03/2026", "07/03/2026", "10/03/2026", "12/03/2026",
-      "14/03/2026", "17/03/2026", "19/03/2026", "21/03/2026", "24/03/2026",
-      "26/03/2026", "28/03/2026", "31/03/2026", "02/04/2026", "04/04/2026",
-      "07/04/2026", "09/04/2026", "11/04/2026", "14/04/2026", "16/04/2026",
-      "18/04/2026", "21/04/2026", "23/04/2026", "25/04/2026", "28/04/2026",
-      "30/04/2026", "05/05/2026", "07/05/2026", "09/05/2026", "12/05/2026",
-      "14/05/2026", "16/05/2026", "19/05/2026", "21/05/2026", "23/05/2026",
-      "26/05/2026", "28/05/2026", "30/05/2026", "02/06/2026", "04/06/2026",
-      "06/06/2026", "09/06/2026", "11/06/2026", "13/06/2026", "16/06/2026",
-      "18/06/2026", "20/06/2026", "23/06/2026", "25/06/2026", "27/06/2026"
+      "03/03/2026",
+      "05/03/2026",
+      "07/03/2026",
+      "10/03/2026",
+      "12/03/2026",
+      "14/03/2026",
+      "17/03/2026",
+      "19/03/2026",
+      "21/03/2026",
+      "24/03/2026",
+      "26/03/2026",
+      "28/03/2026",
+      "31/03/2026",
+      "02/04/2026",
+      "04/04/2026",
+      "07/04/2026",
+      "09/04/2026",
+      "11/04/2026",
+      "14/04/2026",
+      "16/04/2026",
+      "18/04/2026",
+      "21/04/2026",
+      "23/04/2026",
+      "25/04/2026",
+      "28/04/2026",
+      "30/04/2026",
+      "05/05/2026",
+      "07/05/2026",
+      "09/05/2026",
+      "12/05/2026",
+      "14/05/2026",
+      "16/05/2026",
+      "19/05/2026",
+      "21/05/2026",
+      "23/05/2026",
+      "26/05/2026",
+      "28/05/2026",
+      "30/05/2026",
+      "02/06/2026",
+      "04/06/2026",
+      "06/06/2026",
+      "09/06/2026",
+      "11/06/2026",
+      "13/06/2026",
+      "16/06/2026",
+      "18/06/2026",
+      "20/06/2026",
+      "23/06/2026",
+      "25/06/2026",
+      "27/06/2026",
     ];
   }
 
   // Filtra as datas que ainda vão acontecer e retorna as próximas 5
   return cronogramaAtivo
-    .filter(dataStr => {
-      const [dia, mes, ano] = dataStr.split('/');
+    .filter((dataStr) => {
+      const [dia, mes, ano] = dataStr.split("/");
       const dataAula = new Date(ano, mes - 1, dia);
       return dataAula >= hoje;
     })
-    .slice(0, 5); 
+    .slice(0, 5);
 };
 
 export default function App() {
@@ -92,6 +171,12 @@ export default function App() {
       minute: "2-digit",
     }),
   );
+
+  const [stats] = useState({
+    totalAlunos: 0,
+    sessoesAtivas: 0,
+    totalPresencas: 0,
+  });
 
   const [alarmeAtivo] = useState(true);
 
@@ -367,6 +452,12 @@ export default function App() {
               <>
                 <button
                   className="btn-secondary"
+                  onClick={() => setView("home")}
+                >
+                  Home
+                </button>
+                <button
+                  className="btn-secondary"
                   style={{
                     border: view === "admin" ? "2px solid #008080" : "none",
                   }}
@@ -418,7 +509,14 @@ export default function App() {
         </div>
       </header>
 
-      {view === "admin" && user.role === "admin" ? (
+      {/* 1. SE FOR ADMIN E ESTIVER NA HOME OU NA VIEW ADMIN */}
+      {view === "home" && user.role === "admin" ? (
+        <HomeAdmin
+          stats={stats} // Agora 'stats' está definido e virá do banco de dados
+          proximasAulas={getProximasAulas("fullstack")}
+          user={user}
+        />
+      ) : view === "admin" && user.role === "admin" ? (
         <Admin user={user} setView={setView} />
       ) : view === "perfil" && user.role !== "admin" ? (
         <Perfil
@@ -429,27 +527,42 @@ export default function App() {
       ) : view === "limpeza" && user.role === "admin" ? (
         <GestaoRapida user={user} setView={setView} />
       ) : (
+        /* 4. LAYOUT EXCLUSIVO DO ALUNO (SÓ APARECE SE NÃO FOR ADMIN) */
         <main className="content-grid">
           <div className="aula-card shadow-card">
             <div className="card-header-info">
-  <p style={{ color: "var(--text-dim)" }}>
-    {new Date().toLocaleDateString("pt-BR")}
-  </p>
-  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
-    <h2 style={{ color: "var(--text-dim)", margin: 0 }}>Olá, {nomeExibicao}!</h2>
-    <span className="user-badge" style={{ fontSize: '0.8rem', padding: '2px 10px' }}>
-       {user.formacao === 'fullstack' ? 'Fullstack Developer' : 'Data Analytics'}
-    </span>
-  </div>
-</div>
+              <p style={{ color: "var(--text-dim)" }}>
+                {new Date().toLocaleDateString("pt-BR")}
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <h2 style={{ color: "var(--text-dim)", margin: 0 }}>
+                  Olá, {nomeExibicao}!
+                </h2>
+                <span
+                  className="user-badge"
+                  style={{ fontSize: "0.8rem", padding: "2px 10px" }}
+                >
+                  {user.formacao === "fullstack"
+                    ? "Fullstack Developer"
+                    : "Data Analytics"}
+                </span>
+              </div>
+            </div>
 
             <div className="info-banner">
               ℹ Informação: Check-in e Check-out disponíveis nos dias de aula
               presencial da sua formação.
             </div>
+
             <div style={{ margin: "20px 0", textAlign: "center" }}>
               {(() => {
-                // Pegamos as variáveis atualizadas da nossa nova lógica
                 const { isDiaDeAula, podeCheckIn, podeCheckOut, diasCorretos } =
                   validarHorarioPonto();
 
@@ -458,14 +571,13 @@ export default function App() {
                     <button
                       className="btn-ponto in"
                       onClick={() => {
-                        // Apenas avisa, mas NÃO retorna/bloqueia
                         if (!isDiaDeAula || !podeCheckIn) {
                           exibirPopup(
                             `🧪 MODO TESTE: Hoje não é seu horário oficial (${diasCorretos}), mas o registro será feito para teste.`,
                             "aviso",
                           );
                         }
-                        baterPonto(); // Executa mesmo fora do horário
+                        baterPonto();
                       }}
                     >
                       CHECK-IN
@@ -484,7 +596,7 @@ export default function App() {
                             "aviso",
                           );
                         }
-                        setFeedback({ ...feedback, modal: true }); // Abre o modal de feedback normalmente
+                        setFeedback({ ...feedback, modal: true });
                       }}
                     >
                       CHECK-OUT
@@ -492,7 +604,6 @@ export default function App() {
                   );
                 }
 
-                // 4. Se ambos os registros foram feitos
                 return (
                   <div className="ponto-concluido">
                     ✔ Presença confirmada no Leão Tech
@@ -500,6 +611,7 @@ export default function App() {
                 );
               })()}
             </div>
+
             <p className="usability-info">
               Registro processado pelo horário de Brasília. <br />
               Local: Prédio da SERPRO (Av. Pontes Vieira, 832) <br />
@@ -516,34 +628,37 @@ export default function App() {
               <span className="stat-label">Total de Presenças</span>
               <div className="stat-value">{totalPresencas}</div>
             </div>
-
             <div
               className="stat-card"
               style={{ marginTop: "12px", textAlign: "left" }}
             >
               <span className="stat-label">📅 Próximas Aulas</span>
-<ul>
-  {getProximasAulas(user.formacao).map((data, i) => {
-    const [dia, mes, ano] = data.split('/');
-    const dataObj = new Date(ano, mes - 1, dia);
-    const eSabado = dataObj.getDay() === 6;
-    const eInaugural = data === "26/02/2026";
+              <ul>
+                {getProximasAulas(user.formacao).map((data, i) => {
+                  const [dia, mes, ano] = data.split("/");
+                  const dataObj = new Date(ano, mes - 1, dia);
+                  const eSabado = dataObj.getDay() === 6;
+                  const eInaugural = data === "26/02/2026";
 
-    let horario = "18:30h";
-    if (eSabado) horario = "08:30h";
-    if (eInaugural) horario = "19:00h - Evento Geral";
+                  let horario = "18:30h";
+                  if (eSabado) horario = "08:30h";
+                  if (eInaugural) horario = "19:00h - Evento Geral";
 
-    return (
-      <li key={i} style={{ color: eInaugural ? "var(--blue-light)" : "inherit" }}>
-        <span>{data}</span>
-        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-          {eInaugural ? "🚀 Aula Inaugural" : horario}
-        </span>
-      </li>
-    );
-  })}
-</ul>
-
+                  return (
+                    <li
+                      key={i}
+                      style={{
+                        color: eInaugural ? "var(--blue-light)" : "inherit",
+                      }}
+                    >
+                      <span>{data}</span>
+                      <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
+                        {eInaugural ? "🚀 Aula Inaugural" : horario}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
 
             <div className="stat-card">

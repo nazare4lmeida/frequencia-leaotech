@@ -5,6 +5,7 @@ import { fetchComToken } from "./Api";
 export default function Admin({ user }) {
   const [busca, setBusca] = useState("");
   const [filtroTurma, setFiltroTurma] = useState("todos");
+  const [proximasAulas, setProximasAulas] = useState([]);
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [alunos, setAlunos] = useState([]);
   const [totalEncontrado, setTotalEncontrado] = useState(0);
@@ -41,25 +42,28 @@ export default function Admin({ user }) {
 
   // 1. Carregar estatísticas gerais da turma
   useEffect(() => {
-    const carregarStats = async () => {
-      try {
-        // Adicionamos ?dataFiltro=${dataBusca} para os círculos mudarem junto com o calendário
-        const res = await fetch(
-          `${API_URL}/admin/stats/${filtroTurma}?dataFiltro=${dataBusca}`,
-          {
-            headers: { Authorization: `Bearer ${user.token}` },
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
+  const carregarStats = async () => {
+    try {
+      const res = await fetch(
+        `${API_URL}/admin/stats/${filtroTurma}?dataFiltro=${dataBusca}`,
+        {
+          headers: { Authorization: `Bearer ${user.token}` },
         }
-      } catch (err) {
-        console.error("Erro ao carregar estatísticas:", err);
+      );
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Dados recebidos da API:", data); // Verifique se concluidosHoje e sessoesAtivas estão vindo
+        setStats(data);
+      } else {
+        console.error("Erro na resposta da API:", res.status);
       }
-    };
-    carregarStats();
-  }, [filtroTurma, dataBusca, user.token]);
+    } catch (err) {
+      console.error("Erro de conexão ao buscar stats:", err);
+    }
+  };
+  carregarStats();
+}, [filtroTurma, dataBusca, user.token]);
 
   // 2. Lógica de busca e filtros
   const buscarAlunos = useCallback(
@@ -243,45 +247,195 @@ export default function Admin({ user }) {
     }
   };
 
+  const calcularProximasAulas = useCallback((formacao) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const aulaInaugural = "26/02/2026";
+    let cronogramaAtivo = [];
+
+    if (formacao === "fullstack") {
+      cronogramaAtivo = [
+        aulaInaugural,
+        "02/03/2026",
+        "04/03/2026",
+        "06/03/2026",
+        "09/03/2026",
+        "11/03/2026",
+        "13/03/2026",
+        "16/03/2026",
+        "18/03/2026",
+        "20/03/2026",
+        "23/03/2026",
+        "25/03/2026",
+        "27/03/2026",
+        "30/03/2026",
+        "01/04/2026",
+        "06/04/2026",
+        "08/04/2026",
+        "13/04/2026",
+        "15/04/2026",
+        "17/04/2026",
+        "20/04/2026",
+        "22/04/2026",
+        "24/04/2026",
+        "27/04/2026",
+        "29/04/2026",
+        "04/05/2026",
+        "06/05/2026",
+        "08/05/2026",
+        "11/05/2026",
+        "13/05/2026",
+        "15/05/2026",
+        "18/05/2026",
+        "20/05/2026",
+        "22/05/2026",
+        "25/05/2026",
+        "27/05/2026",
+        "29/05/2026",
+        "01/06/2026",
+        "03/06/2026",
+        "05/06/2026",
+        "08/06/2026",
+        "10/06/2026",
+        "12/06/2026",
+        "15/06/2026",
+        "17/06/2026",
+        "19/06/2026",
+        "22/06/2026",
+        "24/06/2026",
+        "26/06/2026",
+      ];
+    } else {
+      cronogramaAtivo = [
+        aulaInaugural,
+        "03/03/2026",
+        "05/03/2026",
+        "07/03/2026",
+        "10/03/2026",
+        "12/03/2026",
+        "14/03/2026",
+        "17/03/2026",
+        "19/03/2026",
+        "21/03/2026",
+        "24/03/2026",
+        "26/03/2026",
+        "28/03/2026",
+        "31/03/2026",
+        "02/04/2026",
+        "04/04/2026",
+        "07/04/2026",
+        "09/04/2026",
+        "11/04/2026",
+        "14/04/2026",
+        "16/04/2026",
+        "18/04/2026",
+        "21/04/2026",
+        "23/04/2026",
+        "25/04/2026",
+        "28/04/2026",
+        "30/04/2026",
+        "05/05/2026",
+        "07/05/2026",
+        "09/05/2026",
+        "12/05/2026",
+        "14/05/2026",
+        "16/05/2026",
+        "19/05/2026",
+        "21/05/2026",
+        "23/05/2026",
+        "26/05/2026",
+        "28/05/2026",
+        "30/05/2026",
+        "02/06/2026",
+        "04/06/2026",
+        "06/06/2026",
+        "09/06/2026",
+        "11/06/2026",
+        "13/06/2026",
+        "16/06/2026",
+        "18/06/2026",
+        "20/06/2026",
+        "23/06/2026",
+        "25/06/2026",
+        "27/06/2026",
+      ];
+    }
+
+    const filtradas = cronogramaAtivo
+      .filter((dataStr) => {
+        const [dia, mes, ano] = dataStr.split("/");
+        return new Date(ano, mes - 1, dia) >= hoje;
+      })
+      .slice(0, 5);
+
+    setProximasAulas(filtradas);
+  }, []);
+
+  useEffect(() => {
+    calcularProximasAulas(
+      filtroTurma === "data_analytics" ? "data_analytics" : "fullstack",
+    );
+  }, [filtroTurma, calcularProximasAulas]);
+
   const exportarRelatorio = async () => {
+    // Validação básica para garantir que as datas foram preenchidas
+    if (!periodoExport.inicio || !periodoExport.fim) {
+      alert("Por favor, selecione as datas de início e fim para exportar.");
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/admin/relatorio/${filtroTurma}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+      // CORREÇÃO AQUI: Enviando os parâmetros de data na URL (Query Strings)
+      const res = await fetch(
+        `${API_URL}/admin/relatorio/${filtroTurma}?inicio=${periodoExport.inicio}&fim=${periodoExport.fim}`,
+        {
+          headers: { Authorization: `Bearer ${user.token}` },
+        },
+      );
+
       const dados = await res.json();
 
       if (!dados || dados.length === 0) {
-        alert("Nenhum dado para exportar.");
+        alert("Nenhum dado encontrado para este período.");
         return;
       }
 
-      // Adicionamos Nota e Feedback no cabeçalho
+      // Montagem do cabeçalho (Nota e Feedback incluídos)
       const cabecalho =
         "Nome;Email;Formação;Data;Entrada;Saída;Nota;Feedback\n";
+
       const linhas = dados
         .map(
           (item) =>
-            `${item.Nome};${item.Email};${item.Formacao};${item.Data};${item.Entrada};${item.Saida};${item.Nota};"${item.Feedback.replace(/"/g, '""')}"`,
+            `${item.Nome};${item.Email};${item.Formacao};${item.Data};${item.Entrada};${item.Saida};${item.Nota};"${item.Feedback ? item.Feedback.replace(/"/g, '""') : ""}"`,
         )
         .join("\n");
 
       const conteudoCSV = cabecalho + linhas;
-      // O "\ufeff" é o segredo para o Excel entender os acentos em Português
+
+      // O "\ufeff" resolve o problema de acentuação no Excel brasileiro
       const blob = new Blob(["\ufeff" + conteudoCSV], {
         type: "text/csv;charset=utf-8;",
       });
-      const url = URL.createObjectURL(blob);
 
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
+
+      // Nome do arquivo dinâmico com o período selecionado
       link.setAttribute(
         "download",
-        `frequencia_${filtroTurma}_${new Date().toISOString().split("T")[0]}.csv`,
+        `frequencia_${filtroTurma}_${periodoExport.inicio}_a_${periodoExport.fim}.csv`,
       );
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch {
+
+      // Limpa a URL da memória
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Erro na exportação:", err);
       alert("Erro ao exportar planilha.");
     }
   };
@@ -291,6 +445,58 @@ export default function Admin({ user }) {
       className="app-wrapper"
       style={{ maxWidth: "1100px", margin: "0 auto", padding: "20px" }}
     >
+      {/* --- INÍCIO DO NOVO ACRÉSCIMO: HOME DE GESTÃO RÁPIDA --- */}
+      <div className="home-admin-header" style={{ marginBottom: "40px" }}>
+        <div className="shadow-card" style={{ 
+          padding: "30px", 
+          background: "linear-gradient(135deg, var(--card-bg) 0%, rgba(0, 128, 128, 0.08) 100%)",
+          borderLeft: "8px solid #008080",
+          borderRadius: "15px"
+        }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "40px" }}>
+            <div>
+              <span style={{ fontSize: "0.8rem", color: "#008080", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Central de Comando Geração Tech 3.0
+              </span>
+              <h2 style={{ margin: "10px 0", fontSize: "1.8rem" }}>
+                {proximasAulas[0] === "26/02/2026" ? "🚀 Aula Inaugural Amanhã!" : `Próxima Aula: ${proximasAulas[0]}`}
+              </h2>
+              <p style={{ fontSize: "1.1rem", color: "var(--text-normal)" }}>
+                <strong>Pauta prevista:</strong> {
+                  proximasAulas[0] === "26/02/2026" ? "Boas-vindas, apresentação da metodologia e tour pela plataforma." :
+                  proximasAulas[0] === "02/03/2026" ? "HTML & CSS: O início da jornada Web Full Stack." :
+                  "Módulo técnico conforme cronograma oficial."
+                }
+              </p>
+              <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+                <div style={{ padding: "10px 15px", background: "rgba(0,0,0,0.1)", borderRadius: "8px", fontSize: "0.85rem" }}>
+                  🔔 <strong>Lembrete:</strong> Conferir lista de presença às 22:15.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "30px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>ENGAJAMENTO DA TURMA</span>
+              <h1 style={{ margin: "5px 0", color: "#008080", fontSize: "2.5rem" }}>
+                {((stats.sessoesAtivas / (stats.totalAlunos || 1)) * 100).toFixed(0)}%
+              </h1>
+              <p style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>Alunos presentes em tempo real</p>
+              <div style={{ background: "var(--border-subtle)", height: "8px", borderRadius: "4px", marginTop: "10px", overflow: "hidden" }}>
+                <div style={{ 
+                  width: `${(stats.sessoesAtivas / (stats.totalAlunos || 1)) * 100}%`, 
+                  background: "#008080", 
+                  height: "100%" 
+                }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr style={{ border: "none", borderTop: "1px solid var(--border-subtle)", marginBottom: "40px" }} />
+      {/* --- FIM DO NOVO ACRÉSCIMO --- */}
+
+      {/* INÍCIO DO SEU DASHBOARD ORIGINAL (MANTIDO) */}
       <div style={{ marginBottom: "30px" }}>
         <div
           style={{
@@ -349,6 +555,79 @@ export default function Admin({ user }) {
           fizeram check-in hoje.
         </p>
       </div>
+
+      {/* --- INÍCIO DO ACRESCIMO: PAINEL DE CONTROLE OPERACIONAL --- */}
+      <div
+        className="shadow-card"
+        style={{
+          padding: "25px",
+          marginBottom: "30px",
+          background:
+            "linear-gradient(135deg, var(--card-bg) 0%, rgba(0, 128, 128, 0.05) 100%)",
+          borderLeft: "6px solid #008080",
+          borderRadius: "12px",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr",
+            gap: "30px",
+          }}
+        >
+          <div>
+            <span
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--text-dim)",
+                fontWeight: "bold",
+                textTransform: "uppercase",
+              }}
+            >
+              Status da Próxima Aula
+            </span>
+            <h3
+              style={{ margin: "10px 0", color: "#008080", fontSize: "1.5rem" }}
+            >
+              {proximasAulas[0] || "Sem aulas futuras"}
+            </h3>
+            <p style={{ margin: 0, fontSize: "1.1rem" }}>
+              <strong>Assunto:</strong>{" "}
+              {proximasAulas[0] === "26/02/2026"
+                ? "🚀 Aula Inaugural: Boas-vindas e Configurações"
+                : proximasAulas[0] === "02/03/2026"
+                  ? "HTML & CSS: Estrutura e Semântica"
+                  : "Tópico técnico conforme cronograma"}
+            </p>
+          </div>
+          <div
+            style={{
+              borderLeft: "1px solid var(--border-subtle)",
+              paddingLeft: "30px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <span style={{ fontSize: "0.7rem", color: "var(--text-dim)" }}>
+              SESSÕES ATIVAS
+            </span>
+            <h2 style={{ margin: "5px 0", color: "#008080" }}>
+              {stats.sessoesAtivas || 0}
+            </h2>
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--text-dim)",
+                margin: 0,
+              }}
+            >
+              Alunos em aula agora
+            </p>
+          </div>
+        </div>
+      </div>
+      {/* --- FIM DO ACRESCIMO --- */}
 
       <div className="admin-stat-card card-destaque-hoje">
         <span className="admin-stat-label">CONCLUÍRAM HOJE (SAÍDA OK)</span>
@@ -588,6 +867,39 @@ export default function Admin({ user }) {
             >
               Exportar CSV
             </button>
+          </div>
+          <div
+            className="shadow-card"
+            style={{ padding: "20px", borderLeft: "4px solid #008080" }}
+          >
+            <h4 style={{ color: "#008080", marginBottom: "15px" }}>
+              📅 Próximas Aulas
+            </h4>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {proximasAulas.map((data, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "8px",
+                    background: "rgba(0, 128, 128, 0.05)",
+                    borderRadius: "6px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>Aula {idx + 1}</span>
+                  <strong>{data}</strong>
+                </div>
+              ))}
+              {proximasAulas.length === 0 && (
+                <p style={{ fontSize: "0.8rem" }}>
+                  Nenhuma aula futura encontrada.
+                </p>
+              )}
+            </div>
           </div>
           <div
             className="shadow-card"
