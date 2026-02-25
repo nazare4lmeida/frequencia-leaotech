@@ -226,7 +226,13 @@ export default function App() {
     return () => clearInterval(timer);
   }, [alarmeAtivo]);
 
+ // --- Trecho Completo: Validação de Horário + Login ---
+
   const validarHorarioPonto = () => {
+    // --- CONFIGURAÇÃO DE TESTE ---
+    const MODO_TESTE = true; // Altere para false quando terminar de gravar o vídeo
+    // ----------------------------
+
     const agora = new Date();
     const diaSemana = agora.getDay();
     const hora = agora.getHours();
@@ -237,9 +243,21 @@ export default function App() {
     const eDataAnalytics = user?.formacao === "data_analytics";
 
     let isDiaDeAula = false;
-    let janelaCheckIn = { inicio: 18, fim: 20.5 };
-    let janelaCheckOut = { inicio: 22, fim: 22.5 };
+    let janelaCheckIn = { inicio: 18, fim: 20.5 }; // 18:00 às 20:30
+    let janelaCheckOut = { inicio: 21.5, fim: 23.9 }; // A partir das 21:30
 
+    // Se o modo teste estiver ativo, liberamos tudo para a data de hoje
+    if (MODO_TESTE) {
+      return {
+        isDiaDeAula: true,
+        podeCheckIn: true,
+        podeCheckOut: true,
+        regras: "MODO TESTE ATIVO",
+        diasCorretos: "Todos os dias (Vídeo)",
+      };
+    }
+
+    // Lógica original (mantida para quando MODO_TESTE for false)
     if (eFullStack && [1, 3, 5].includes(diaSemana)) {
       isDiaDeAula = true;
     } else if (eDataAnalytics) {
@@ -248,19 +266,15 @@ export default function App() {
       } else if (diaSemana === 6) {
         isDiaDeAula = true;
         janelaCheckIn = { inicio: 8, fim: 10 };
-        janelaCheckOut = { inicio: 12, fim: 12.5 };
+        janelaCheckOut = { inicio: 11.5, fim: 13 };
       }
     }
 
     return {
       isDiaDeAula,
-      podeCheckIn:
-        horaAtualDecimal >= janelaCheckIn.inicio &&
-        horaAtualDecimal <= janelaCheckIn.fim,
-      podeCheckOut:
-        horaAtualDecimal >= janelaCheckOut.inicio &&
-        horaAtualDecimal <= janelaCheckOut.fim,
-      regras: diaSemana === 6 ? "08:00 e 12:00" : "18:00 e 22:00",
+      podeCheckIn: horaAtualDecimal >= janelaCheckIn.inicio && horaAtualDecimal <= janelaCheckIn.fim,
+      podeCheckOut: horaAtualDecimal >= janelaCheckOut.inicio && horaAtualDecimal <= janelaCheckOut.fim,
+      regras: diaSemana === 6 ? "08:00 e 11:30" : "18:00 e 21:30",
       diasCorretos: eFullStack ? "Seg, Qua e Sex" : "Ter, Qui e Sáb",
     };
   };
@@ -407,13 +421,6 @@ export default function App() {
     );
   }
 
-  // --- LÓGICA DE COMPARAÇÃO DE DATA CORRIGIDA ---
-  const hojeISO = new Date().toLocaleDateString("en-CA");
-  const pontoHoje = historico.find((h) => {
-    const dataRegistro = h.data?.substring(0, 10);
-    return dataRegistro === hojeISO;
-  });
-
   const totalPresencas = historico.length;
   const totalFaltas = 0;
   const nomeExibicao = user.nome || user.email.split("@")[0];
@@ -527,163 +534,143 @@ export default function App() {
       ) : view === "limpeza" && user.role === "admin" ? (
         <GestaoRapida user={user} setView={setView} />
       ) : (
-        /* 4. LAYOUT EXCLUSIVO DO ALUNO (SÓ APARECE SE NÃO FOR ADMIN) */
-        <main className="content-grid">
-          <div className="aula-card shadow-card">
+/* 4. LAYOUT EXCLUSIVO DO ALUNO (SÓ APARECE SE NÃO FOR ADMIN) */
+        <main className="aluno-main-wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+          
+          {/* CARD PRINCIPAL DE PONTO - LARGURA TOTAL DO WRAPPER */}
+          <div className="aula-card shadow-card" style={{ width: "100%", boxSizing: "border-box", marginBottom: "25px" }}>
             <div className="card-header-info">
               <p style={{ color: "var(--text-dim)" }}>
                 {new Date().toLocaleDateString("pt-BR")}
               </p>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
                 <h2 style={{ color: "var(--text-dim)", margin: 0 }}>
                   Olá, {nomeExibicao}!
                 </h2>
-                <span
-                  className="user-badge"
-                  style={{ fontSize: "0.8rem", padding: "2px 10px" }}
-                >
-                  {user.formacao === "fullstack"
-                    ? "Fullstack Developer"
-                    : "Data Analytics"}
+                <span className="user-badge" style={{ fontSize: "0.8rem", padding: "2px 10px" }}>
+                  {user.formacao === "fullstack" ? "Fullstack Developer" : "Data Analytics"}
                 </span>
               </div>
             </div>
 
-            <div className="info-banner">
-              ℹ Informação: Check-in e Check-out disponíveis nos dias de aula
-              presencial da sua formação.
+            <div className="info-banner" style={{ margin: "15px 0" }}>
+              ℹ Informação: Check-in e Check-out disponíveis nos dias de aula presencial da sua formação.
             </div>
 
             <div style={{ margin: "20px 0", textAlign: "center" }}>
               {(() => {
-                const { isDiaDeAula, podeCheckIn, podeCheckOut, diasCorretos } =
-                  validarHorarioPonto();
-
-                if (!pontoHoje?.check_in) {
-                  return (
-                    <button
-                      className="btn-ponto in"
-                      onClick={() => {
-                        if (!isDiaDeAula || !podeCheckIn) {
-                          exibirPopup(
-                            `🧪 MODO TESTE: Hoje não é seu horário oficial (${diasCorretos}), mas o registro será feito para teste.`,
-                            "aviso",
-                          );
-                        }
-                        baterPonto();
-                      }}
-                    >
-                      CHECK-IN
-                    </button>
-                  );
-                }
-
-                if (!pontoHoje?.check_out) {
-                  return (
-                    <button
-                      className="btn-ponto out"
-                      onClick={() => {
-                        if (!isDiaDeAula || !podeCheckOut) {
-                          exibirPopup(
-                            `🧪 MODO TESTE: Registrando saída fora do horário oficial para teste.`,
-                            "aviso",
-                          );
-                        }
-                        setFeedback({ ...feedback, modal: true });
-                      }}
-                    >
-                      CHECK-OUT
-                    </button>
-                  );
-                }
+                const { isDiaDeAula, podeCheckIn, podeCheckOut, diasCorretos } = validarHorarioPonto();
+                const hojeISO = new Date().toLocaleDateString("en-CA");
+                const registroHoje = historico.find((h) => h.data?.substring(0, 10) === hojeISO);
+                const jaFezIn = !!registroHoje?.check_in;
+                const jaFezOut = !!registroHoje?.check_out;
 
                 return (
-                  <div className="ponto-concluido">
-                    ✔ Presença confirmada no Leão Tech
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '25px' }}>
+                      <button
+                        className={`btn-ponto in ${jaFezIn ? "concluido" : ""}`}
+                        disabled={jaFezIn}
+                        onClick={() => {
+                          if (!isDiaDeAula || !podeCheckIn) {
+                            exibirPopup(`Horário de Check-in: 18:00 às 20:30 (${diasCorretos})`, "erro");
+                            return;
+                          }
+                          baterPonto();
+                        }}
+                        style={jaFezIn ? { backgroundColor: "#2d3748", cursor: "default", opacity: 0.8, flex: 1 } : { flex: 1 }}
+                      >
+                        {jaFezIn ? "✔ CHECK-IN FEITO" : "CHECK-IN"}
+                      </button>
+
+                      <button
+                        className={`btn-ponto out ${jaFezOut ? "concluido" : ""}`}
+                        disabled={jaFezOut || !jaFezIn}
+                        onClick={() => {
+                          if (!jaFezIn) {
+                            exibirPopup("Faça o check-in primeiro!", "erro");
+                            return;
+                          }
+                          if (!isDiaDeAula || !podeCheckOut) {
+                            exibirPopup("Check-out liberado a partir das 21:30", "erro");
+                            return;
+                          }
+                          setFeedback({ ...feedback, modal: true });
+                        }}
+                        style={(jaFezOut || !jaFezIn) ? { backgroundColor: "#2d3748", cursor: "default", opacity: 0.6, flex: 1 } : { flex: 1 }}
+                      >
+                        {jaFezOut ? "✔ CHECK-OUT FEITO" : "CHECK-OUT"}
+                      </button>
+                    </div>
+
+                    <div style={{
+                      background: "rgba(0, 128, 128, 0.05)",
+                      padding: "20px",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(0, 128, 128, 0.1)",
+                      width: "100%",
+                      boxSizing: "border-box"
+                    }}>
+                      <h5 style={{ margin: "0 0 15px 0", color: "#008080", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px" }}>
+                        🕒 Janelas Oficiais de Registro
+                      </h5>
+                      <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <span style={{ display: "block", color: "var(--text-dim)", fontSize: "0.65rem", marginBottom: "5px" }}>ENTRADA</span>
+                          <strong style={{ fontSize: "1.1rem" }}>18:00 — 20:30</strong>
+                        </div>
+                        <div style={{ width: "1px", height: "30px", background: "rgba(0,128,128,0.2)" }}></div>
+                        <div style={{ textAlign: 'center' }}>
+                          <span style={{ display: "block", color: "var(--text-dim)", fontSize: "0.65rem", marginBottom: "5px" }}>SAÍDA</span>
+                          <strong style={{ fontSize: "1.1rem" }}>Após 21:30</strong>
+                        </div>
+                      </div>
+                      <p style={{ margin: "15px 0 0 0", fontSize: "0.75rem", color: "var(--text-dim)", fontStyle: "italic" }}>
+                        * Sábados (Data Analytics): 08:00 — 10:00 | Saída: Após 11:30
+                      </p>
+                    </div>
+                  </>
                 );
               })()}
             </div>
 
-            <p className="usability-info">
-              Registro processado pelo horário de Brasília. <br />
-              Local: Prédio da SERPRO (Av. Pontes Vieira, 832) <br />
-              <br />
-              <strong>🕒 Janelas de Ponto:</strong> <br />
-              {user.formacao === "data_analytics"
-                ? "Ter/Qui: 18h e 22h | Sáb: 08h e 12h"
-                : "Seg/Qua/Sex: 18h e 22h"}
-            </p>
-          </div>
-
-          <div className="stats-grid">
-            <div className="stat-card">
-              <span className="stat-label">Total de Presenças</span>
-              <div className="stat-value">{totalPresencas}</div>
-            </div>
-            <div
-              className="stat-card"
-              style={{ marginTop: "12px", textAlign: "left" }}
-            >
-              <span className="stat-label">📅 Próximas Aulas</span>
-              <ul>
-                {getProximasAulas(user.formacao).map((data, i) => {
-                  const [dia, mes, ano] = data.split("/");
-                  const dataObj = new Date(ano, mes - 1, dia);
-                  const eSabado = dataObj.getDay() === 6;
-                  const eInaugural = data === "26/02/2026";
-
-                  let horario = "18:30h";
-                  if (eSabado) horario = "08:30h";
-                  if (eInaugural) horario = "19:00h - Evento Geral";
-
-                  return (
-                    <li
-                      key={i}
-                      style={{
-                        color: eInaugural ? "var(--blue-light)" : "inherit",
-                      }}
-                    >
-                      <span>{data}</span>
-                      <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
-                        {eInaugural ? "🚀 Aula Inaugural" : horario}
+            <div className="stats-grid" style={{ marginTop: "30px" }}>
+              <div className="stat-card">
+                <span className="stat-label">Total de Presenças</span>
+                <div className="stat-value">{totalPresencas}</div>
+              </div>
+              
+              <div className="stat-card" style={{ textAlign: "left" }}>
+                <span className="stat-label">📅 Próximas Aulas</span>
+                <ul style={{ paddingLeft: "15px", margin: "10px 0" }}>
+                  {getProximasAulas(user.formacao).map((data, i) => (
+                    <li key={i} style={{ marginBottom: "5px", color: data === "26/02/2026" ? "var(--blue-light)" : "inherit" }}>
+                      <span style={{ fontWeight: "bold" }}>{data}</span>
+                      <span style={{ fontSize: "0.75rem", opacity: 0.8, marginLeft: "8px" }}>
+                        {data === "26/02/2026" ? "🚀 Aula Inaugural" : "18:30h"}
                       </span>
                     </li>
-                  );
-                })}
-              </ul>
-            </div>
+                  ))}
+                </ul>
+              </div>
 
-            <div className="stat-card">
-              <span className="stat-label">Total de Faltas</span>
-              <div className="stat-value faltas">{totalFaltas}</div>
-            </div>
+              <div className="stat-card">
+                <span className="stat-label">Total de Faltas</span>
+                <div className="stat-value faltas">{totalFaltas}</div>
+              </div>
 
-            <div className="stat-card">
-              <span className="stat-label">Status da Sessão</span>
-              <div
-                className="stat-value text-success"
-                style={{ fontSize: "1.2rem" }}
-              >
-                Ativa
+              <div className="stat-card">
+                <span className="stat-label">Status da Sessão</span>
+                <div className="stat-value text-success" style={{ fontSize: "1.2rem" }}>Ativa</div>
               </div>
             </div>
           </div>
 
-          <div
-            id="historico-section"
-            className="historico-container shadow-card"
-          >
+          {/* HISTÓRICO COMPLETO - AGORA ALINHADO PERFEITAMENTE */}
+          <div id="historico-section" className="historico-container shadow-card" style={{ width: "100%", boxSizing: "border-box", padding: "20px" }}>
             <h3>Meu Histórico Completo</h3>
             <div className="table-responsive">
-              <table className="historico-table">
+              <table className="historico-table" style={{ width: "100%" }}>
                 <thead>
                   <tr>
                     <th>Data</th>
@@ -693,40 +680,13 @@ export default function App() {
                 </thead>
                 <tbody>
                   {historico.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="3"
-                        style={{
-                          textAlign: "center",
-                          color: "var(--text-dim)",
-                        }}
-                      >
-                        Nenhum registro encontrado.
-                      </td>
-                    </tr>
+                    <tr><td colSpan="3" style={{ textAlign: "center", color: "var(--text-dim)" }}>Nenhum registro encontrado.</td></tr>
                   ) : (
                     historico.map((h, i) => (
                       <tr key={i}>
-                        <td>
-                          {new Date(h.data).toLocaleDateString("pt-BR", {
-                            timeZone: "UTC",
-                          })}
-                        </td>
-                        {/* Tratamento para exibir apenas HH:mm mesmo com timestamp completo */}
-                        <td>
-                          {h.check_in
-                            ? h.check_in.includes("T")
-                              ? h.check_in.split("T")[1].substring(0, 5)
-                              : h.check_in.substring(0, 5)
-                            : "--:--"}
-                        </td>
-                        <td>
-                          {h.check_out
-                            ? h.check_out.includes("T")
-                              ? h.check_out.split("T")[1].substring(0, 5)
-                              : h.check_out.substring(0, 5)
-                            : "--:--"}
-                        </td>
+                        <td>{new Date(h.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</td>
+                        <td>{h.check_in ? (h.check_in.includes("T") ? h.check_in.split("T")[1].substring(0, 5) : h.check_in.substring(0, 5)) : "--:--"}</td>
+                        <td>{h.check_out ? (h.check_out.includes("T") ? h.check_out.split("T")[1].substring(0, 5) : h.check_out.substring(0, 5)) : "--:--"}</td>
                       </tr>
                     ))
                   )}
@@ -737,57 +697,21 @@ export default function App() {
         </main>
       )}
 
+      {/* MODAL DE FEEDBACK (FORA DO WRAPPER DE LARGURA) */}
       {feedback.modal && (
         <div className="modal-overlay">
           <div className="modal-content shadow-xl">
             <h3>Finalizar Check-out</h3>
-            <p className="text-muted" style={{ marginBottom: "15px" }}>
-              Como foi sua experiência na aula de hoje?
-            </p>
-            <div
-              className="rating-group"
-              style={{
-                display: "flex",
-                gap: "10px",
-                margin: "15px 0",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "var(--text-dim)",
-              }}
-            >
+            <p className="text-muted" style={{ marginBottom: "15px" }}>Como foi sua experiência na aula de hoje?</p>
+            <div className="rating-group" style={{ display: "flex", gap: "10px", margin: "15px 0", justifyContent: "center", alignItems: "center", color: "var(--text-dim)" }}>
               {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  className={`btn-rating ${feedback.nota === n ? "active" : ""}`}
-                  onClick={() => setFeedback({ ...feedback, nota: n })}
-                >
-                  {n}
-                </button>
+                <button key={n} className={`btn-rating ${feedback.nota === n ? "active" : ""}`} onClick={() => setFeedback({ ...feedback, nota: n })}>{n}</button>
               ))}
             </div>
-            <textarea
-              className="input-notes"
-              placeholder="Algum comentário ou dúvida?"
-              value={feedback.revisao}
-              onChange={(e) =>
-                setFeedback({ ...feedback, revisao: e.target.value })
-              }
-            />
+            <textarea className="input-notes" placeholder="Algum comentário ou dúvida?" value={feedback.revisao} onChange={(e) => setFeedback({ ...feedback, revisao: e.target.value })} />
             <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
-              <button
-                className="btn-ponto in"
-                onClick={() =>
-                  baterPonto({ nota: feedback.nota, revisao: feedback.revisao })
-                }
-              >
-                Confirmar Saída
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => setFeedback({ ...feedback, modal: false })}
-              >
-                Voltar
-              </button>
+              <button className="btn-ponto in" onClick={() => baterPonto({ nota: feedback.nota, revisao: feedback.revisao })}>Confirmar Saída</button>
+              <button className="btn-secondary" onClick={() => setFeedback({ ...feedback, modal: false })}>Voltar</button>
             </div>
           </div>
         </div>
