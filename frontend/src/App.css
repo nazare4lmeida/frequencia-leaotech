@@ -1394,107 +1394,114 @@ input[type="time"].input-modern {
 /* 17. AJUSTE PROFISSIONAL – MODO CLARO (LIGHT MODE) */
 /* ================================================= */
 body:not(.dark) {
-  --bg-deep: #f8fafc; 
+  /* Fundo levemente acinzentado para destacar os cards brancos */
+  --bg-deep: #f1f5f9; 
   --bg-elevated: #ffffff;
   --card-bg: #ffffff;
-  --card-bg-hover: #f1f5f9;
+  --card-bg-hover: #f8fafc;
 
+  /* Textos com contraste máximo (Slate 900) */
   --text-main: #0f172a; 
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --text-dim: #64748b;
 
-  --border-subtle: #e2e8f0; 
-  --border-hover: #cbd5e1;
+  /* Bordas mais visíveis */
+  --border-subtle: #cbd5e1; 
+  --border-hover: #94a3b8;
 
-  /* Azul no modo claro: Mais denso para garantir acessibilidade */
-  --blue-primary: #1e40af; 
-  --blue-light: #3b82f6;
-  --blue-glow: rgba(30, 64, 175, 0.08);
+  /* Azul e Verde Leão Tech para modo claro */
+  --blue-primary: #008080; /* Mantendo o teal da marca */
+  --blue-light: #0d9488;
+  --blue-glow: rgba(0, 128, 128, 0.1);
 
-  --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.12);
 }
 
 /* Ajustes finos para Modo Claro */
 body:not(.dark) .glass-header {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  background: #ffffff !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
 }
 
+/* Garante que os cards fiquem brancos puro sobre o fundo cinza */
 body:not(.dark) .stat-card,
 body:not(.dark) .admin-stat-card,
 body:not(.dark) .shadow-card,
-body:not(.dark) .ponto-card {
+body:not(.dark) .historico-container,
+body:not(.dark) .aula-card {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #bdd6f6 !important;
   box-shadow: var(--shadow-md) !important;
 }
 
-/* Números das estatísticas no modo claro */
+/* Títulos e valores com contraste forte */
+body:not(.dark) h1, 
+body:not(.dark) h2, 
+body:not(.dark) h3, 
+body:not(.dark) h4 {
+  color: #0f172a !important;
+}
+
 body:not(.dark) .stat-value, 
 body:not(.dark) .admin-stat-number {
-  color: var(--blue-primary) !important;
+  color: #008080 !important;
+  font-weight: 800 !important;
 }
 
-body:not(.dark) .time-box {
+/* Tabelas mais legíveis */
+body:not(.dark) .historico-table th {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+body:not(.dark) .historico-table td {
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body:not(.dark) .historico-table tr:hover {
   background: #f1f5f9 !important;
-  border: 1px solid #e2e8f0 !important;
 }
 
-body:not(.dark) .admin-table tr,
-body:not(.dark) .historico-table tr {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
+/* Inputs com bordas nítidas */
 body:not(.dark) .input-modern,
-body:not(.dark) .input-notes,
-body:not(.dark) select.input-modern {
+body:not(.dark) .input-notes {
   background: #ffffff !important;
-  border: 1px solid #d1d5db !important;
-  color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
+body:not(.dark) .input-modern:focus {
+  border-color: #008080 !important;
+  outline: none;
+}
+
+/* Botões secundários (Sair, Tema, etc) */
 body:not(.dark) .btn-secondary {
-  background: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 body:not(.dark) .btn-secondary:hover {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
-  border-color: var(--blue-primary);
+  background: #cbd5e1 !important;
+  border-color: #c6daf6 !important;
 }
 
-/* Barra de progresso no modo claro */
-body:not(.dark) .admin-progress-container {
-  background: #e2e8f0 !important;
+/* Logo e Badges */
+body:not(.dark) .user-badge {
+  background: #f1f5f9 !important;
+  color: #008080 !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
-body:not(.dark) .admin-progress-bar {
-  background: var(--blue-primary) !important;
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-logo-img {
-  height: 38px;      /* Altura ideal para o header de 60px */
-  width: auto;       /* Mantém a proporção da imagem */
-  object-fit: contain;
-  filter: drop-shadow(0 0 4px var(--blue-glow)); /* Dá um leve brilho azul na logo */
-  transition: transform var(--transition);
-}
-
-.brand-logo:hover .brand-logo-img {
-  transform: scale(1.05); /* Leve zoom ao passar o mouse */
+body:not(.dark) .info-banner {
+  background: #f0fdfa !important; /* Verde água bem clarinho */
+  color: #0f766e !important;
+  border: 1px solid #99f6e4 !important;
 }
 
 /* Ajuste no brand-text para alinhar com a nova imagem */
