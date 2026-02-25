@@ -390,7 +390,7 @@ export default function App() {
       if (!extra.nota) {
         setTimeout(() => {
           exibirPopup(
-            "📌 Lembrete: O Check-out deve ser feito hoje entre 22:00 e 22:30.",
+            "📌 Lembrete: O Check-out deve ser feito a partir das 21:30.",
             "aviso",
           );
         }, 1000);
