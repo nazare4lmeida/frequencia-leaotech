@@ -19,7 +19,7 @@ Nota sobre a Sessão: O portal mantém você logado por 30 minutos. Se você atu
 A frequência é composta por duas etapas obrigatórias em cada dia de aula:
 
 Check-in (Entrada)
-Horário permitido: Entre 18:00 e 20:00.
+Horário permitido: Entre 18:00 e 20:30.
 
 Como fazer: Clique no botão azul "CHECK-IN" na tela inicial.
 

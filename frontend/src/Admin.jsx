@@ -36,8 +36,8 @@ export default function Admin({ user }) {
   });
   const [manualPonto, setManualPonto] = useState({
     data: new Date().toISOString().split("T")[0],
-    check_in: "18:30",
-    check_out: "22:00",
+    check_in: "18:00",
+    check_out: "21:30",
   });
 
   // 1. Carregar estatísticas gerais da turma

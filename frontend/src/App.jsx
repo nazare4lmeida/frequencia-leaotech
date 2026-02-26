@@ -647,7 +647,7 @@ export default function App() {
                     <li key={i} style={{ marginBottom: "5px", color: data === "26/02/2026" ? "var(--blue-light)" : "inherit" }}>
                       <span style={{ fontWeight: "bold" }}>{data}</span>
                       <span style={{ fontSize: "0.75rem", opacity: 0.8, marginLeft: "8px" }}>
-                        {data === "26/02/2026" ? "🚀 Aula Inaugural" : "18:30h"}
+                        {data === "26/02/2026" ? "🚀 Aula Inaugural" : "18:00h"}
                       </span>
                     </li>
                   ))}
