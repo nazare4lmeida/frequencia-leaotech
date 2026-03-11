@@ -42,28 +42,28 @@ export default function Admin({ user }) {
 
   // 1. Carregar estatísticas gerais da turma
   useEffect(() => {
-  const carregarStats = async () => {
-    try {
-      const res = await fetch(
-        `${API_URL}/admin/stats/${filtroTurma}?dataFiltro=${dataBusca}`,
-        {
-          headers: { Authorization: `Bearer ${user.token}` },
+    const carregarStats = async () => {
+      try {
+        const res = await fetch(
+          `${API_URL}/admin/stats/${filtroTurma}?dataFiltro=${dataBusca}`,
+          {
+            headers: { Authorization: `Bearer ${user.token}` },
+          },
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Dados recebidos da API:", data); // Verifique se concluidosHoje e sessoesAtivas estão vindo
+          setStats(data);
+        } else {
+          console.error("Erro na resposta da API:", res.status);
         }
-      );
-      
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Dados recebidos da API:", data); // Verifique se concluidosHoje e sessoesAtivas estão vindo
-        setStats(data);
-      } else {
-        console.error("Erro na resposta da API:", res.status);
+      } catch (err) {
+        console.error("Erro de conexão ao buscar stats:", err);
       }
-    } catch (err) {
-      console.error("Erro de conexão ao buscar stats:", err);
-    }
-  };
-  carregarStats();
-}, [filtroTurma, dataBusca, user.token]);
+    };
+    carregarStats();
+  }, [filtroTurma, dataBusca, user.token]);
 
   // 2. Lógica de busca e filtros
   const buscarAlunos = useCallback(
@@ -447,53 +447,120 @@ export default function Admin({ user }) {
     >
       {/* --- INÍCIO DO NOVO ACRÉSCIMO: HOME DE GESTÃO RÁPIDA --- */}
       <div className="home-admin-header" style={{ marginBottom: "40px" }}>
-        <div className="shadow-card" style={{ 
-          padding: "30px", 
-          background: "linear-gradient(135deg, var(--card-bg) 0%, rgba(0, 128, 128, 0.08) 100%)",
-          borderLeft: "8px solid #008080",
-          borderRadius: "15px"
-        }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "40px" }}>
+        <div
+          className="shadow-card"
+          style={{
+            padding: "30px",
+            background:
+              "linear-gradient(135deg, var(--card-bg) 0%, rgba(0, 128, 128, 0.08) 100%)",
+            borderLeft: "8px solid #008080",
+            borderRadius: "15px",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.5fr 1fr",
+              gap: "40px",
+            }}
+          >
             <div>
-              <span style={{ fontSize: "0.8rem", color: "#008080", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>
+              <span
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#008080",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
                 Central de Comando Geração Tech 3.0
               </span>
               <h2 style={{ margin: "10px 0", fontSize: "1.8rem" }}>
-                {proximasAulas[0] === "26/02/2026" ? "🚀 Aula Inaugural Amanhã!" : `Próxima Aula: ${proximasAulas[0]}`}
+                {proximasAulas[0] === "26/02/2026"
+                  ? "🚀 Aula Inaugural Amanhã!"
+                  : `Próxima Aula: ${proximasAulas[0]}`}
               </h2>
               <p style={{ fontSize: "1.1rem", color: "var(--text-normal)" }}>
-                <strong>Pauta prevista:</strong> {
-                  proximasAulas[0] === "26/02/2026" ? "Boas-vindas, apresentação da metodologia e tour pela plataforma." :
-                  proximasAulas[0] === "02/03/2026" ? "HTML & CSS: O início da jornada Web Full Stack." :
-                  "Módulo técnico conforme cronograma oficial."
-                }
+                <strong>Pauta prevista:</strong>{" "}
+                {proximasAulas[0] === "26/02/2026"
+                  ? "Boas-vindas, apresentação da metodologia e tour pela plataforma."
+                  : proximasAulas[0] === "02/03/2026"
+                    ? "HTML & CSS: O início da jornada Web Full Stack."
+                    : "Módulo técnico conforme cronograma oficial."}
               </p>
               <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-                <div style={{ padding: "10px 15px", background: "rgba(0,0,0,0.1)", borderRadius: "8px", fontSize: "0.85rem" }}>
-                  🔔 <strong>Lembrete:</strong> Conferir lista de presença às 22:15.
+                <div
+                  style={{
+                    padding: "10px 15px",
+                    background: "rgba(0,0,0,0.1)",
+                    borderRadius: "8px",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  🔔 <strong>Lembrete:</strong> Conferir lista de presença às
+                  22:15.
                 </div>
               </div>
             </div>
 
-            <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "30px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>ENGAJAMENTO DA TURMA</span>
-              <h1 style={{ margin: "5px 0", color: "#008080", fontSize: "2.5rem" }}>
-                {((stats.sessoesAtivas / (stats.totalAlunos || 1)) * 100).toFixed(0)}%
+            <div
+              style={{
+                borderLeft: "1px solid var(--border-subtle)",
+                paddingLeft: "30px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>
+                ENGAJAMENTO DA TURMA
+              </span>
+              <h1
+                style={{
+                  margin: "5px 0",
+                  color: "#008080",
+                  fontSize: "2.5rem",
+                }}
+              >
+                {(
+                  (stats.sessoesAtivas / (stats.totalAlunos || 1)) *
+                  100
+                ).toFixed(0)}
+                %
               </h1>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>Alunos presentes em tempo real</p>
-              <div style={{ background: "var(--border-subtle)", height: "8px", borderRadius: "4px", marginTop: "10px", overflow: "hidden" }}>
-                <div style={{ 
-                  width: `${(stats.sessoesAtivas / (stats.totalAlunos || 1)) * 100}%`, 
-                  background: "#008080", 
-                  height: "100%" 
-                }} />
+              <p style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>
+                Alunos presentes em tempo real
+              </p>
+              <div
+                style={{
+                  background: "var(--border-subtle)",
+                  height: "8px",
+                  borderRadius: "4px",
+                  marginTop: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(stats.sessoesAtivas / (stats.totalAlunos || 1)) * 100}%`,
+                    background: "#008080",
+                    height: "100%",
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <hr style={{ border: "none", borderTop: "1px solid var(--border-subtle)", marginBottom: "40px" }} />
+
+      <hr
+        style={{
+          border: "none",
+          borderTop: "1px solid var(--border-subtle)",
+          marginBottom: "40px",
+        }}
+      />
       {/* --- FIM DO NOVO ACRÉSCIMO --- */}
 
       {/* INÍCIO DO SEU DASHBOARD ORIGINAL (MANTIDO) */}
@@ -776,6 +843,7 @@ export default function Admin({ user }) {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Aqui usamos o .map direto, pois a lógica de faltas agora é na outra tela */}
                   {alunos.map((aluno) => (
                     <tr
                       key={aluno.email}
