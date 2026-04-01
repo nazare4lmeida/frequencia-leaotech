@@ -426,8 +426,112 @@ app.get(
     const { data: hoje } = getBrasiliaTime();
     const dataAlvo = dataFiltro || hoje;
 
+    const AULAS_POR_TURMA = {
+      fullstack: [
+        "2026-03-02",
+        "2026-03-04",
+        "2026-03-06",
+        "2026-03-09",
+        "2026-03-11",
+        "2026-03-13",
+        "2026-03-16",
+        "2026-03-18",
+        "2026-03-20",
+        "2026-03-23",
+        "2026-03-25",
+        "2026-03-27",
+        "2026-03-30",
+        "2026-04-01",
+        "2026-04-06",
+        "2026-04-08",
+        "2026-04-15",
+        "2026-04-17",
+        "2026-04-20",
+        "2026-04-22",
+        "2026-04-24",
+        "2026-04-27",
+        "2026-04-29",
+        "2026-05-04",
+        "2026-05-06",
+        "2026-05-08",
+        "2026-05-11",
+        "2026-05-13",
+        "2026-05-15",
+        "2026-05-18",
+        "2026-05-20",
+        "2026-05-22",
+        "2026-05-25",
+        "2026-05-27",
+        "2026-05-29",
+        "2026-06-01",
+        "2026-06-03",
+        "2026-06-05",
+        "2026-06-08",
+        "2026-06-10",
+        "2026-06-12",
+        "2026-06-15",
+        "2026-06-17",
+        "2026-06-19",
+        "2026-06-22",
+        "2026-06-24",
+        "2026-06-26",
+        "2026-06-29",
+      ],
+      data_analytics: [
+        "2026-03-03",
+        "2026-03-05",
+        "2026-03-07",
+        "2026-03-10",
+        "2026-03-12",
+        "2026-03-14",
+        "2026-03-17",
+        "2026-03-21",
+        "2026-03-24",
+        "2026-03-26",
+        "2026-03-28",
+        "2026-03-31",
+        "2026-04-07",
+        "2026-04-09",
+        "2026-04-11",
+        "2026-04-14",
+        "2026-04-16",
+        "2026-04-18",
+        "2026-04-23",
+        "2026-04-25",
+        "2026-04-28",
+        "2026-04-30",
+        "2026-05-02",
+        "2026-05-05",
+        "2026-05-07",
+        "2026-05-09",
+        "2026-05-12",
+        "2026-05-14",
+        "2026-05-16",
+        "2026-05-19",
+        "2026-05-21",
+        "2026-05-23",
+        "2026-05-26",
+        "2026-05-28",
+        "2026-05-30",
+        "2026-06-02",
+        "2026-06-06",
+        "2026-06-09",
+        "2026-06-11",
+        "2026-06-13",
+        "2026-06-16",
+        "2026-06-18",
+        "2026-06-20",
+        "2026-06-23",
+        "2026-06-25",
+        "2026-06-27",
+        "2026-06-30",
+        "2026-07-02",
+      ],
+    };
+
     try {
       let query = supabase.from("alunos").select("*");
+
       if (turma && turma !== "todos") query = query.eq("formacao", turma);
       if (termo)
         query = query.or(`nome.ilike.%${termo}%,email.ilike.%${termo}%`);
@@ -436,82 +540,82 @@ app.get(
       const { data: alunos, error } = await query;
       if (error) throw error;
 
-      let resultadoFinal = alunos;
+      let resultadoFinal = alunos || [];
+
       if (
         status === "pendente_saida" ||
         status === "checkout_antecipado" ||
         status === "presentes_no_dia"
       ) {
-        const { data: presencas } = await supabase
+        const { data: presencas, error: erroPresencasDia } = await supabase
           .from("presencas")
-          .select("aluno_email, check_out")
+          .select("aluno_email, data, check_out")
           .eq("data", dataAlvo);
+
+        if (erroPresencasDia) throw erroPresencasDia;
 
         let emailsFiltrados = [];
 
         if (status === "pendente_saida") {
-          emailsFiltrados = presencas
+          emailsFiltrados = (presencas || [])
             .filter((p) => !p.check_out)
-            .map((p) => p.aluno_email);
+            .map((p) => p.aluno_email?.trim().toLowerCase());
         } else if (status === "checkout_antecipado") {
-          emailsFiltrados = presencas
+          emailsFiltrados = (presencas || [])
             .filter((p) => {
               if (!p.check_out) return false;
 
-              // Extrair apenas HH:mm
               let horaExtraida = p.check_out.includes("T")
                 ? p.check_out.split("T")[1].substring(0, 5)
                 : p.check_out.substring(0, 5);
 
-              // Descobrir o dia da semana dessa presença específica
-              const dataPresenca = new Date(p.data);
-              const eSabado = dataPresenca.getUTCDay() === 6;
-
-              // Se for sábado, cedo é antes das 12:00.
-              // Se for dia de semana, cedo é antes das 22:00.
+              const dataPresenca = new Date(`${p.data}T00:00:00`);
+              const eSabado = dataPresenca.getDay() === 6;
               const horaLimiteSaida = eSabado ? "12:00" : "22:00";
 
               return horaExtraida < horaLimiteSaida;
             })
-            .map((p) => p.aluno_email);
+            .map((p) => p.aluno_email?.trim().toLowerCase());
         } else if (status === "presentes_no_dia") {
-          emailsFiltrados = presencas.map((p) => p.aluno_email);
+          emailsFiltrados = (presencas || []).map((p) =>
+            p.aluno_email?.trim().toLowerCase(),
+          );
         }
 
-        resultadoFinal = alunos.filter((a) =>
-          emailsFiltrados.includes(a.email),
+        resultadoFinal = resultadoFinal.filter((a) =>
+          emailsFiltrados.includes(a.email?.trim().toLowerCase()),
         );
       }
+
       const { data: todasPresencas, error: erroP } = await supabase
         .from("presencas")
         .select("aluno_email, data");
 
-      if (erroP) console.error("Erro ao buscar presenças:", erroP);
-      const contarAulasPassadas = () => {
-        const dataInicio = new Date("2026-03-02"); // Data de início do Leão Tech
-        let contagem = 0;
-        let d = new Date(dataInicio);
-
-        while (d <= hoje) {
-          const dia = d.getDay();
-          // Se for Fullstack (1,3,5) ou Data Analytics (2,4,6)
-          // Uma lógica simples: conta se não for domingo (0)
-          if (dia !== 0) contagem++;
-          d.setDate(d.getDate() + 1);
-        }
-        // Como são ~3 aulas por semana por curso:
-        return Math.floor(contagem / 2); // Ajuste grosseiro até você separar por turma
-      };
-
-      const aulasOcorridas = contarAulasPassadas();
+      if (erroP) throw erroP;
 
       const resultadoFinalComCalculos = resultadoFinal.map((aluno) => {
         const emailAlu = aluno.email?.trim().toLowerCase();
-        const presencasConfirmadas = todasPresencas
-          ? todasPresencas.filter(
-              (p) => p.aluno_email?.trim().toLowerCase() === emailAlu,
-            ).length
-          : 0;
+        const turmaAluno = aluno.formacao;
+        const calendarioTurma = AULAS_POR_TURMA[turmaAluno] || [];
+
+        const aulasOcorridas = calendarioTurma.filter(
+          (dataAula) => dataAula <= hoje,
+        ).length;
+
+        const datasComPresenca = new Set(
+          (todasPresencas || [])
+            .filter((p) => p.aluno_email?.trim().toLowerCase() === emailAlu)
+            .map((p) => {
+              if (!p.data) return null;
+              return p.data.includes("T") ? p.data.split("T")[0] : p.data;
+            })
+            .filter(Boolean),
+        );
+
+        const presencasConfirmadas = calendarioTurma.filter((dataAula) =>
+          datasComPresenca.has(dataAula),
+        ).length;
+
         const faltasReais = Math.max(0, aulasOcorridas - presencasConfirmadas);
 
         return {
@@ -520,12 +624,13 @@ app.get(
           total_faltas: faltasReais,
         };
       });
+
       res.json({
         total: resultadoFinalComCalculos.length,
         alunos: resultadoFinalComCalculos,
       });
     } catch (err) {
-      console.error(err);
+      console.error("ERRO NA BUSCA ADMIN:", err);
       res.status(500).json({ error: "Erro na busca administrativa." });
     }
   },
