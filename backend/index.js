@@ -13,6 +13,10 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+const CLASSROOM_LAT = Number(process.env.CLASSROOM_LAT);
+const CLASSROOM_LNG = Number(process.env.CLASSROOM_LNG);
+const CHECKIN_RADIUS_METERS = Number(process.env.CHECKIN_RADIUS_METERS || 120);
+
 if (!supabaseUrl || !supabaseKey || !JWT_SECRET) {
   console.error(
     "ERRO: Variáveis de ambiente (SUPABASE ou JWT_SECRET) não configuradas!",
@@ -67,6 +71,76 @@ const getBrasiliaTime = () => {
   const data = brasilia.toISOString().split("T")[0];
   const hora = brasilia.toLocaleTimeString("pt-BR", { hour12: false });
   return { data, hora };
+};
+
+// ==========================================
+// LOCALIZAÇÃO
+
+const toRad = (value) => (value * Math.PI) / 180;
+
+const calcularDistanciaMetros = (lat1, lng1, lat2, lng2) => {
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
+};
+
+const TEST_LOCATION_LAT = Number(process.env.TEST_LOCATION_LAT);
+const TEST_LOCATION_LNG = Number(process.env.TEST_LOCATION_LNG);
+
+const validarLocalCheckin = (latitude, longitude) => {
+  if (!Number.isFinite(CLASSROOM_LAT) || !Number.isFinite(CLASSROOM_LNG)) {
+    throw new Error("Local da sala não configurado no servidor.");
+  }
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return {
+      ok: false,
+      distancia: null,
+      origem: "fora",
+    };
+  }
+
+  const distanciaSala = calcularDistanciaMetros(
+    latitude,
+    longitude,
+    CLASSROOM_LAT,
+    CLASSROOM_LNG,
+  );
+
+  const dentroSala = distanciaSala <= CHECKIN_RADIUS_METERS;
+
+  let distanciaTeste = null;
+  let dentroTeste = false;
+
+  if (
+    Number.isFinite(TEST_LOCATION_LAT) &&
+    Number.isFinite(TEST_LOCATION_LNG)
+  ) {
+    distanciaTeste = calcularDistanciaMetros(
+      latitude,
+      longitude,
+      TEST_LOCATION_LAT,
+      TEST_LOCATION_LNG,
+    );
+
+    dentroTeste = distanciaTeste <= CHECKIN_RADIUS_METERS;
+  }
+
+  return {
+    ok: dentroSala || dentroTeste,
+    distancia: dentroSala ? distanciaSala : distanciaTeste,
+    origem: dentroSala ? "sala" : dentroTeste ? "teste" : "fora",
+  };
 };
 
 // ==========================================
@@ -206,12 +280,21 @@ app.put("/api/aluno/perfil", verificarToken, async (req, res) => {
 // REGISTRAR PONTO - PROTEGIDA
 // ==========================================
 app.post("/api/ponto", verificarToken, async (req, res) => {
-  const { aluno_id, nota, revisao } = req.body;
-  const { data: hoje, hora: agora } = getBrasiliaTime();
-  const timestampCompleto = `${hoje}T${agora}`;
-  const emailBusca = aluno_id.trim().toLowerCase();
+  console.log("BODY /api/ponto:", req.body);
 
   try {
+    const { aluno_id, nota, revisao, latitude, longitude } = req.body;
+
+    if (!aluno_id || typeof aluno_id !== "string") {
+      return res.status(400).json({
+        error: "aluno_id não enviado ou inválido.",
+      });
+    }
+
+    const { data: hoje, hora: agora } = getBrasiliaTime();
+    const timestampCompleto = `${hoje}T${agora}`;
+    const emailBusca = aluno_id.trim().toLowerCase();
+
     const { data: pontoExistente, error: fetchError } = await supabase
       .from("presencas")
       .select("*")
@@ -219,49 +302,114 @@ app.post("/api/ponto", verificarToken, async (req, res) => {
       .eq("data", hoje)
       .maybeSingle();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("ERRO fetch presencas:", fetchError);
+      return res.status(500).json({
+        error: fetchError.message || "Erro ao buscar presença do dia.",
+        details: fetchError,
+      });
+    }
 
     if (!pontoExistente) {
+      if (latitude === undefined || longitude === undefined) {
+        return res.status(400).json({
+          error:
+            "Localização não recebida. Ative a localização e tente novamente.",
+        });
+      }
+
+      const latitudeNum = Number(latitude);
+      const longitudeNum = Number(longitude);
+
+      if (!Number.isFinite(latitudeNum) || !Number.isFinite(longitudeNum)) {
+        return res.status(400).json({
+          error: "Localização inválida.",
+        });
+      }
+
+      const validacaoLocal = validarLocalCheckin(latitudeNum, longitudeNum);
+
+      console.log("VALIDACAO LOCAL:", {
+        latitude,
+        longitude,
+        latitudeNum,
+        longitudeNum,
+        CLASSROOM_LAT,
+        CLASSROOM_LNG,
+        CHECKIN_RADIUS_METERS,
+        validacaoLocal,
+      });
+
+      if (!validacaoLocal.ok) {
+        return res.status(403).json({
+          error: "Check-in permitido somente no endereço da aula.",
+          distancia: validacaoLocal.distancia,
+        });
+      }
+
+      const payloadInsert = {
+        aluno_email: emailBusca,
+        data: hoje,
+        check_in: timestampCompleto,
+        checkin_latitude: latitudeNum,
+        checkin_longitude: longitudeNum,
+        checkin_distancia_metros: validacaoLocal.distancia,
+        checkin_local_valido: true,
+      };
+
+      console.log("INSERT PRESENCAS:", payloadInsert);
+
       const { data: novoPonto, error: insError } = await supabase
         .from("presencas")
-        .insert([
-          {
-            aluno_email: emailBusca,
-            data: hoje,
-            check_in: timestampCompleto,
-          },
-        ])
+        .insert([payloadInsert])
         .select();
 
-      if (insError) throw insError;
+      if (insError) {
+        console.error("ERRO insert presencas:", insError);
+        return res.status(500).json({
+          error: insError.message || "Erro ao inserir check-in.",
+          details: insError,
+        });
+      }
+
       return res.json({
         msg: "Check-in realizado com sucesso!",
         ponto: novoPonto[0],
       });
-    } else {
-      if (pontoExistente.check_out) {
-        return res.json({ msg: "Você já concluiu sua presença de hoje." });
-      }
+    }
 
-      const { data: pontoAtualizado, error: updError } = await supabase
-        .from("presencas")
-        .update({
-          check_out: timestampCompleto,
-          feedback_nota: nota || null,
-          feedback_texto: revisao || "",
-        })
-        .eq("id", pontoExistente.id)
-        .select();
+    if (pontoExistente.check_out) {
+      return res.json({ msg: "Você já concluiu sua presença de hoje." });
+    }
 
-      if (updError) throw updError;
-      return res.json({
-        msg: "Check-out realizado com sucesso!",
-        ponto: pontoAtualizado[0],
+    const { data: pontoAtualizado, error: updError } = await supabase
+      .from("presencas")
+      .update({
+        check_out: timestampCompleto,
+        feedback_nota: nota || null,
+        feedback_texto: revisao || "",
+      })
+      .eq("id", pontoExistente.id)
+      .select();
+
+    if (updError) {
+      console.error("ERRO update presencas:", updError);
+      return res.status(500).json({
+        error: updError.message || "Erro ao registrar check-out.",
+        details: updError,
       });
     }
+
+    return res.json({
+      msg: "Check-out realizado com sucesso!",
+      ponto: pontoAtualizado[0],
+    });
   } catch (err) {
     console.error("ERRO NO PONTO:", err);
-    res.status(500).json({ error: "Erro ao processar presença." });
+    return res.status(500).json({
+      error: err.message || "Erro ao processar presença.",
+      details: err,
+    });
   }
 });
 

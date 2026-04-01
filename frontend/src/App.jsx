@@ -226,7 +226,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, [alarmeAtivo]);
 
- // --- Trecho Completo: Validação de Horário + Login ---
+  // --- Trecho Completo: Validação de Horário + Login ---
 
   const validarHorarioPonto = () => {
     // --- CONFIGURAÇÃO DE TESTE ---
@@ -272,8 +272,12 @@ export default function App() {
 
     return {
       isDiaDeAula,
-      podeCheckIn: horaAtualDecimal >= janelaCheckIn.inicio && horaAtualDecimal <= janelaCheckIn.fim,
-      podeCheckOut: horaAtualDecimal >= janelaCheckOut.inicio && horaAtualDecimal <= janelaCheckOut.fim,
+      podeCheckIn:
+        horaAtualDecimal >= janelaCheckIn.inicio &&
+        horaAtualDecimal <= janelaCheckIn.fim,
+      podeCheckOut:
+        horaAtualDecimal >= janelaCheckOut.inicio &&
+        horaAtualDecimal <= janelaCheckOut.fim,
       regras: diaSemana === 6 ? "08:00 e 11:30" : "18:00 e 21:30",
       diasCorretos: eFullStack ? "Seg, Qua e Sex" : "Ter, Qui e Sáb",
     };
@@ -364,27 +368,66 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [user?.email, carregarHistorico]);
+  const obterLocalizacaoAtual = () =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocalização não suportada neste dispositivo."));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        () => {
+          reject(
+            new Error(
+              "Não foi possível obter sua localização. Ative a localização do dispositivo.",
+            ),
+          );
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
+        },
+      );
+    });
 
   const baterPonto = async (extra = {}) => {
-    if (!user || !user.email || !user.token)
+    if (!user || !user.email || !user.token) {
       return exibirPopup("Sessão expirada. Faça login novamente.", "erro");
+    }
 
     try {
-      const res = await fetchComToken("/ponto", "POST", {
+      let payload = {
         aluno_id: user.email.trim().toLowerCase(),
         ...extra,
-      });
+      };
+
+      const ehCheckin = !extra.nota;
+
+      if (ehCheckin) {
+        const localizacao = await obterLocalizacaoAtual();
+        payload = {
+          ...payload,
+          latitude: localizacao.latitude,
+          longitude: localizacao.longitude,
+        };
+      }
+
+      const res = await fetchComToken("/ponto", "POST", payload);
 
       const data = await res.json();
 
       if (!res.ok) {
-        // Se der erro 500, o 'data.error' vai nos dizer o motivo exato nos logs
         return exibirPopup(data.error || "Erro ao registrar ponto.", "erro");
       }
 
       exibirPopup(data.msg, "sucesso");
-      // FORÇA O RECONHECIMENTO DA PRESENÇA:
-      // Isso busca os dados novos do Supabase e atualiza o estado 'historico'
       await carregarHistorico();
 
       if (!extra.nota) {
@@ -395,10 +438,11 @@ export default function App() {
           );
         }, 1000);
       }
+
       setFeedback({ nota: 0, revisao: "", modal: false });
     } catch (err) {
       console.error("Erro bater ponto:", err);
-      exibirPopup("Erro de comunicação com o servidor.", "erro");
+      exibirPopup(err.message || "Erro de comunicação com o servidor.", "erro");
     }
   };
 
@@ -534,51 +578,95 @@ export default function App() {
       ) : view === "limpeza" && user.role === "admin" ? (
         <GestaoRapida user={user} setView={setView} />
       ) : (
-/* 4. LAYOUT EXCLUSIVO DO ALUNO (SÓ APARECE SE NÃO FOR ADMIN) */
-        <main className="aluno-main-wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-          
+        /* 4. LAYOUT EXCLUSIVO DO ALUNO (SÓ APARECE SE NÃO FOR ADMIN) */
+        <main
+          className="aluno-main-wrapper"
+          style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}
+        >
           {/* CARD PRINCIPAL DE PONTO - LARGURA TOTAL DO WRAPPER */}
-          <div className="aula-card shadow-card" style={{ width: "100%", boxSizing: "border-box", marginBottom: "25px" }}>
+          <div
+            className="aula-card shadow-card"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              marginBottom: "25px",
+            }}
+          >
             <div className="card-header-info">
               <p style={{ color: "var(--text-dim)" }}>
                 {new Date().toLocaleDateString("pt-BR")}
               </p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
                 <h2 style={{ color: "var(--text-dim)", margin: 0 }}>
                   Olá, {nomeExibicao}!
                 </h2>
-                <span className="user-badge" style={{ fontSize: "0.8rem", padding: "2px 10px" }}>
-                  {user.formacao === "fullstack" ? "Fullstack Developer" : "Data Analytics"}
+                <span
+                  className="user-badge"
+                  style={{ fontSize: "0.8rem", padding: "2px 10px" }}
+                >
+                  {user.formacao === "fullstack"
+                    ? "Fullstack Developer"
+                    : "Data Analytics"}
                 </span>
               </div>
             </div>
 
             <div className="info-banner" style={{ margin: "15px 0" }}>
-              ℹ Informação: Check-in e Check-out disponíveis nos dias de aula presencial da sua formação.
+              ℹ Informação: Check-in e Check-out disponíveis nos dias de aula
+              presencial da sua formação.
             </div>
 
             <div style={{ margin: "20px 0", textAlign: "center" }}>
               {(() => {
-                const { isDiaDeAula, podeCheckIn, podeCheckOut, diasCorretos } = validarHorarioPonto();
+                const { isDiaDeAula, podeCheckIn, podeCheckOut, diasCorretos } =
+                  validarHorarioPonto();
                 const hojeISO = new Date().toLocaleDateString("en-CA");
-                const registroHoje = historico.find((h) => h.data?.substring(0, 10) === hojeISO);
+                const registroHoje = historico.find(
+                  (h) => h.data?.substring(0, 10) === hojeISO,
+                );
                 const jaFezIn = !!registroHoje?.check_in;
                 const jaFezOut = !!registroHoje?.check_out;
 
                 return (
                   <>
-                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '25px' }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "15px",
+                        justifyContent: "center",
+                        marginBottom: "25px",
+                      }}
+                    >
                       <button
                         className={`btn-ponto in ${jaFezIn ? "concluido" : ""}`}
                         disabled={jaFezIn}
                         onClick={() => {
                           if (!isDiaDeAula || !podeCheckIn) {
-                            exibirPopup(`Horário de Check-in: 18:00 às 20:30 (${diasCorretos})`, "erro");
+                            exibirPopup(
+                              `Horário de Check-in: 18:00 às 20:30 (${diasCorretos})`,
+                              "erro",
+                            );
                             return;
                           }
                           baterPonto();
                         }}
-                        style={jaFezIn ? { backgroundColor: "#2d3748", cursor: "default", opacity: 0.8, flex: 1 } : { flex: 1 }}
+                        style={
+                          jaFezIn
+                            ? {
+                                backgroundColor: "#2d3748",
+                                cursor: "default",
+                                opacity: 0.8,
+                                flex: 1,
+                              }
+                            : { flex: 1 }
+                        }
                       >
                         {jaFezIn ? "✔ CHECK-IN FEITO" : "CHECK-IN"}
                       </button>
@@ -592,41 +680,105 @@ export default function App() {
                             return;
                           }
                           if (!isDiaDeAula || !podeCheckOut) {
-                            exibirPopup("Check-out liberado a partir das 21:30", "erro");
+                            exibirPopup(
+                              "Check-out liberado a partir das 21:30",
+                              "erro",
+                            );
                             return;
                           }
                           setFeedback({ ...feedback, modal: true });
                         }}
-                        style={(jaFezOut || !jaFezIn) ? { backgroundColor: "#2d3748", cursor: "default", opacity: 0.6, flex: 1 } : { flex: 1 }}
+                        style={
+                          jaFezOut || !jaFezIn
+                            ? {
+                                backgroundColor: "#2d3748",
+                                cursor: "default",
+                                opacity: 0.6,
+                                flex: 1,
+                              }
+                            : { flex: 1 }
+                        }
                       >
                         {jaFezOut ? "✔ CHECK-OUT FEITO" : "CHECK-OUT"}
                       </button>
                     </div>
 
-                    <div style={{
-                      background: "rgba(0, 128, 128, 0.05)",
-                      padding: "20px",
-                      borderRadius: "12px",
-                      border: "1px solid rgba(0, 128, 128, 0.1)",
-                      width: "100%",
-                      boxSizing: "border-box"
-                    }}>
-                      <h5 style={{ margin: "0 0 15px 0", color: "#008080", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px" }}>
+                    <div
+                      style={{
+                        background: "rgba(0, 128, 128, 0.05)",
+                        padding: "20px",
+                        borderRadius: "12px",
+                        border: "1px solid rgba(0, 128, 128, 0.1)",
+                        width: "100%",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <h5
+                        style={{
+                          margin: "0 0 15px 0",
+                          color: "#008080",
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                        }}
+                      >
                         🕒 Janelas Oficiais de Registro
                       </h5>
-                      <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <span style={{ display: "block", color: "var(--text-dim)", fontSize: "0.65rem", marginBottom: "5px" }}>ENTRADA</span>
-                          <strong style={{ fontSize: "1.1rem" }}>18:00 — 20:30</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-around",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div style={{ textAlign: "center" }}>
+                          <span
+                            style={{
+                              display: "block",
+                              color: "var(--text-dim)",
+                              fontSize: "0.65rem",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            ENTRADA
+                          </span>
+                          <strong style={{ fontSize: "1.1rem" }}>
+                            18:00 — 20:30
+                          </strong>
                         </div>
-                        <div style={{ width: "1px", height: "30px", background: "rgba(0,128,128,0.2)" }}></div>
-                        <div style={{ textAlign: 'center' }}>
-                          <span style={{ display: "block", color: "var(--text-dim)", fontSize: "0.65rem", marginBottom: "5px" }}>SAÍDA</span>
-                          <strong style={{ fontSize: "1.1rem" }}>Após 21:30</strong>
+                        <div
+                          style={{
+                            width: "1px",
+                            height: "30px",
+                            background: "rgba(0,128,128,0.2)",
+                          }}
+                        ></div>
+                        <div style={{ textAlign: "center" }}>
+                          <span
+                            style={{
+                              display: "block",
+                              color: "var(--text-dim)",
+                              fontSize: "0.65rem",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            SAÍDA
+                          </span>
+                          <strong style={{ fontSize: "1.1rem" }}>
+                            Após 21:30
+                          </strong>
                         </div>
                       </div>
-                      <p style={{ margin: "15px 0 0 0", fontSize: "0.75rem", color: "var(--text-dim)", fontStyle: "italic" }}>
-                        * Sábados (Data Analytics): 08:00 — 10:00 | Saída: Após 11:30
+                      <p
+                        style={{
+                          margin: "15px 0 0 0",
+                          fontSize: "0.75rem",
+                          color: "var(--text-dim)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        * Sábados (Data Analytics): 08:00 — 10:00 | Saída: Após
+                        11:30
                       </p>
                     </div>
                   </>
@@ -639,14 +791,29 @@ export default function App() {
                 <span className="stat-label">Total de Presenças</span>
                 <div className="stat-value">{totalPresencas}</div>
               </div>
-              
+
               <div className="stat-card" style={{ textAlign: "left" }}>
                 <span className="stat-label">📅 Próximas Aulas</span>
                 <ul style={{ paddingLeft: "15px", margin: "10px 0" }}>
                   {getProximasAulas(user.formacao).map((data, i) => (
-                    <li key={i} style={{ marginBottom: "5px", color: data === "26/02/2026" ? "var(--blue-light)" : "inherit" }}>
+                    <li
+                      key={i}
+                      style={{
+                        marginBottom: "5px",
+                        color:
+                          data === "26/02/2026"
+                            ? "var(--blue-light)"
+                            : "inherit",
+                      }}
+                    >
                       <span style={{ fontWeight: "bold" }}>{data}</span>
-                      <span style={{ fontSize: "0.75rem", opacity: 0.8, marginLeft: "8px" }}>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          opacity: 0.8,
+                          marginLeft: "8px",
+                        }}
+                      >
                         {data === "26/02/2026" ? "🚀 Aula Inaugural" : "18:00h"}
                       </span>
                     </li>
@@ -661,13 +828,22 @@ export default function App() {
 
               <div className="stat-card">
                 <span className="stat-label">Status da Sessão</span>
-                <div className="stat-value text-success" style={{ fontSize: "1.2rem" }}>Ativa</div>
+                <div
+                  className="stat-value text-success"
+                  style={{ fontSize: "1.2rem" }}
+                >
+                  Ativa
+                </div>
               </div>
             </div>
           </div>
 
           {/* HISTÓRICO COMPLETO - AGORA ALINHADO PERFEITAMENTE */}
-          <div id="historico-section" className="historico-container shadow-card" style={{ width: "100%", boxSizing: "border-box", padding: "20px" }}>
+          <div
+            id="historico-section"
+            className="historico-container shadow-card"
+            style={{ width: "100%", boxSizing: "border-box", padding: "20px" }}
+          >
             <h3>Meu Histórico Completo</h3>
             <div className="table-responsive">
               <table className="historico-table" style={{ width: "100%" }}>
@@ -680,13 +856,39 @@ export default function App() {
                 </thead>
                 <tbody>
                   {historico.length === 0 ? (
-                    <tr><td colSpan="3" style={{ textAlign: "center", color: "var(--text-dim)" }}>Nenhum registro encontrado.</td></tr>
+                    <tr>
+                      <td
+                        colSpan="3"
+                        style={{
+                          textAlign: "center",
+                          color: "var(--text-dim)",
+                        }}
+                      >
+                        Nenhum registro encontrado.
+                      </td>
+                    </tr>
                   ) : (
                     historico.map((h, i) => (
                       <tr key={i}>
-                        <td>{new Date(h.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</td>
-                        <td>{h.check_in ? (h.check_in.includes("T") ? h.check_in.split("T")[1].substring(0, 5) : h.check_in.substring(0, 5)) : "--:--"}</td>
-                        <td>{h.check_out ? (h.check_out.includes("T") ? h.check_out.split("T")[1].substring(0, 5) : h.check_out.substring(0, 5)) : "--:--"}</td>
+                        <td>
+                          {new Date(h.data).toLocaleDateString("pt-BR", {
+                            timeZone: "UTC",
+                          })}
+                        </td>
+                        <td>
+                          {h.check_in
+                            ? h.check_in.includes("T")
+                              ? h.check_in.split("T")[1].substring(0, 5)
+                              : h.check_in.substring(0, 5)
+                            : "--:--"}
+                        </td>
+                        <td>
+                          {h.check_out
+                            ? h.check_out.includes("T")
+                              ? h.check_out.split("T")[1].substring(0, 5)
+                              : h.check_out.substring(0, 5)
+                            : "--:--"}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -702,16 +904,53 @@ export default function App() {
         <div className="modal-overlay">
           <div className="modal-content shadow-xl">
             <h3>Finalizar Check-out</h3>
-            <p className="text-muted" style={{ marginBottom: "15px" }}>Como foi sua experiência na aula de hoje?</p>
-            <div className="rating-group" style={{ display: "flex", gap: "10px", margin: "15px 0", justifyContent: "center", alignItems: "center", color: "var(--text-dim)" }}>
+            <p className="text-muted" style={{ marginBottom: "15px" }}>
+              Como foi sua experiência na aula de hoje?
+            </p>
+            <div
+              className="rating-group"
+              style={{
+                display: "flex",
+                gap: "10px",
+                margin: "15px 0",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "var(--text-dim)",
+              }}
+            >
               {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} className={`btn-rating ${feedback.nota === n ? "active" : ""}`} onClick={() => setFeedback({ ...feedback, nota: n })}>{n}</button>
+                <button
+                  key={n}
+                  className={`btn-rating ${feedback.nota === n ? "active" : ""}`}
+                  onClick={() => setFeedback({ ...feedback, nota: n })}
+                >
+                  {n}
+                </button>
               ))}
             </div>
-            <textarea className="input-notes" placeholder="Algum comentário ou dúvida?" value={feedback.revisao} onChange={(e) => setFeedback({ ...feedback, revisao: e.target.value })} />
+            <textarea
+              className="input-notes"
+              placeholder="Algum comentário ou dúvida?"
+              value={feedback.revisao}
+              onChange={(e) =>
+                setFeedback({ ...feedback, revisao: e.target.value })
+              }
+            />
             <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
-              <button className="btn-ponto in" onClick={() => baterPonto({ nota: feedback.nota, revisao: feedback.revisao })}>Confirmar Saída</button>
-              <button className="btn-secondary" onClick={() => setFeedback({ ...feedback, modal: false })}>Voltar</button>
+              <button
+                className="btn-ponto in"
+                onClick={() =>
+                  baterPonto({ nota: feedback.nota, revisao: feedback.revisao })
+                }
+              >
+                Confirmar Saída
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => setFeedback({ ...feedback, modal: false })}
+              >
+                Voltar
+              </button>
             </div>
           </div>
         </div>
