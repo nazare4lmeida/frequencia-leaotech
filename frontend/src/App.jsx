@@ -65,55 +65,55 @@ const getProximasAulas = (formacao) => {
       "29/06/2026",
     ];
   } else if (formacao === "data_analytics") {
-cronogramaAtivo = [
-  "03/03/2026",
-  "05/03/2026",
-  "07/03/2026",
-  "10/03/2026",
-  "12/03/2026",
-  "14/03/2026",
-  "21/03/2026",
-  "24/03/2026",
-  "26/03/2026",
-  "28/03/2026",
-  "31/03/2026",
-  "07/04/2026",
-  "09/04/2026",
-  "11/04/2026",
-  "14/04/2026",
-  "16/04/2026",
-  "18/04/2026",
-  "23/04/2026",
-  "25/04/2026",
-  "28/04/2026",
-  "30/04/2026",
-  "02/05/2026",
-  "05/05/2026",
-  "07/05/2026",
-  "09/05/2026",
-  "12/05/2026",
-  "14/05/2026",
-  "16/05/2026",
-  "19/05/2026",
-  "21/05/2026",
-  "23/05/2026",
-  "26/05/2026",
-  "28/05/2026",
-  "30/05/2026",
-  "02/06/2026",
-  "06/06/2026",
-  "09/06/2026",
-  "11/06/2026",
-  "13/06/2026",
-  "16/06/2026",
-  "18/06/2026",
-  "20/06/2026",
-  "23/06/2026",
-  "25/06/2026",
-  "27/06/2026",
-  "30/06/2026",
-  "02/07/2026",
-];
+    cronogramaAtivo = [
+      "03/03/2026",
+      "05/03/2026",
+      "07/03/2026",
+      "10/03/2026",
+      "12/03/2026",
+      "14/03/2026",
+      "21/03/2026",
+      "24/03/2026",
+      "26/03/2026",
+      "28/03/2026",
+      "31/03/2026",
+      "07/04/2026",
+      "09/04/2026",
+      "11/04/2026",
+      "14/04/2026",
+      "16/04/2026",
+      "18/04/2026",
+      "23/04/2026",
+      "25/04/2026",
+      "28/04/2026",
+      "30/04/2026",
+      "02/05/2026",
+      "05/05/2026",
+      "07/05/2026",
+      "09/05/2026",
+      "12/05/2026",
+      "14/05/2026",
+      "16/05/2026",
+      "19/05/2026",
+      "21/05/2026",
+      "23/05/2026",
+      "26/05/2026",
+      "28/05/2026",
+      "30/05/2026",
+      "02/06/2026",
+      "06/06/2026",
+      "09/06/2026",
+      "11/06/2026",
+      "13/06/2026",
+      "16/06/2026",
+      "18/06/2026",
+      "20/06/2026",
+      "23/06/2026",
+      "25/06/2026",
+      "27/06/2026",
+      "30/06/2026",
+      "02/07/2026",
+    ];
   }
 
   // Filtra as datas que ainda vão acontecer e retorna as próximas 5
@@ -153,6 +153,7 @@ export default function App() {
     revisao: "",
     modal: false,
   });
+  const [loadingCheckIn, setLoadingCheckIn] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const salvo = localStorage.getItem("leaotech_theme");
     return salvo ? JSON.parse(salvo) : true;
@@ -639,8 +640,10 @@ export default function App() {
                     >
                       <button
                         className={`btn-ponto in ${jaFezIn ? "concluido" : ""}`}
-                        disabled={jaFezIn}
-                        onClick={() => {
+                        disabled={jaFezIn || loadingCheckIn}
+                        onClick={async () => {
+                          if (loadingCheckIn) return;
+
                           if (!isDiaDeAula || !podeCheckIn) {
                             exibirPopup(
                               `Horário de Check-in: 18:00 às 20:30 (${diasCorretos})`,
@@ -648,10 +651,16 @@ export default function App() {
                             );
                             return;
                           }
-                          baterPonto();
+
+                          try {
+                            setLoadingCheckIn(true);
+                            await baterPonto();
+                          } finally {
+                            setLoadingCheckIn(false);
+                          }
                         }}
                         style={
-                          jaFezIn
+                          jaFezIn || loadingCheckIn
                             ? {
                                 backgroundColor: "#2d3748",
                                 cursor: "default",
@@ -661,7 +670,11 @@ export default function App() {
                             : { flex: 1 }
                         }
                       >
-                        {jaFezIn ? "✔ CHECK-IN FEITO" : "CHECK-IN"}
+                        {jaFezIn
+                          ? "✔ CHECK-IN FEITO"
+                          : loadingCheckIn
+                            ? "PROCESSANDO..."
+                            : "CHECK-IN REALIZADO"}
                       </button>
 
                       <button
